@@ -1,0 +1,19 @@
+{
+  "name": "PalabradelDía",
+  "short_name": "Palabra",
+  "description": "Comunidad católica para reflexionar y compartir el Evangelio diario.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f5ef",
+  "theme_color": "#4f6740",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
