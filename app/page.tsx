@@ -1,50 +1,54 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import type { ThemePreference } from "./hooks/useDayPeriod";
-import Header from "./components/Header";
-import { AnimatePresence, motion } from "framer-motion";
-import TabsNav from "./components/TabsNav";
-import GospelSection from "./components/GospelSection";
-import DiarySection from "./components/DiarySection";
-import CommunitySection from "./components/CommunitySection";
-import DiaryStats from "./components/DiaryStats";
-import GuestDiaryNotice from "./components/GuestDiaryNotice";
-import AuthRequiredCard from "./components/AuthRequiredCard";
+
 import AuthModal from "./components/AuthModal";
+import AuthRequiredCard from "./components/AuthRequiredCard";
+import CommunitySection from "./components/CommunitySection";
+import DailyReminderCard from "./components/DailyReminderCard";
+import DiarySection from "./components/DiarySection";
+import DiaryStats from "./components/DiaryStats";
 import EditProfileModal from "./components/EditProfileModal";
-import InstallAppButton from "./components/InstallAppButton";
-import { gospels } from "./data/gospels";
-import type { CommunityPost, Tab } from "./types";
+import GospelSection from "./components/GospelSection";
 import GuidedGuestTour from "./components/GuidedGuestTour";
-import { useDiaryEntries } from "./hooks/useDiaryEntries";
-import { useReflectionForm } from "./hooks/useReflectionForm";
-import { useDiaryActions } from "./hooks/useDiaryActions";
+import Header from "./components/Header";
+import InstallAppButton from "./components/InstallAppButton";
+import TabsNav from "./components/TabsNav";
+
+import { gospels } from "./data/gospels";
+
+import { useAuth } from "./hooks/useAuth";
 import { useCommunityActions } from "./hooks/useCommunityActions";
 import { useCommunityPosts } from "./hooks/useCommunityPosts";
-import { useAuth } from "./hooks/useAuth";
 import { useDayPeriod } from "./hooks/useDayPeriod";
+import { useDiaryActions } from "./hooks/useDiaryActions";
+import { useDiaryEntries } from "./hooks/useDiaryEntries";
+import { useReflectionForm } from "./hooks/useReflectionForm";
 import { useSaveFeedback } from "./hooks/useSaveFeedback";
-import { useUserProfile } from "./hooks/useUserProfile";
 import { useTodayGospel } from "./hooks/useTodayGospel";
+import { useUserProfile } from "./hooks/useUserProfile";
 
+import type { CommunityPost, Tab } from "./types";
 import { getThemeClasses } from "./utils/theme";
-import DailyReminderCard from "./components/DailyReminderCard";
 
 export default function Home() {
   const { todayGospel, isLoadingGospel } = useTodayGospel();
+
   const [openGospelEntryId, setOpenGospelEntryId] = useState<
-  number | string | null
+    number | string | null
   >(null);
+
   const { user: authUser, isAuthenticated, signOut } = useAuth();
   const { currentUser, refreshProfile } = useUserProfile(authUser);
 
   const [themePreference, setThemePreference] =
-  useState<ThemePreference>("auto");
+    useState<ThemePreference>("auto");
 
   useEffect(() => {
-  const savedPreference = localStorage.getItem(
-    "palabradeldia_theme_preference"
+    const savedPreference = localStorage.getItem(
+      "palabradeldia_theme_preference"
     ) as ThemePreference | null;
 
     if (
@@ -58,31 +62,22 @@ export default function Home() {
     }
   }, []);
 
-function handleThemePreferenceChange(nextPreference: ThemePreference) {
-  localStorage.setItem("palabradeldia_theme_preference", nextPreference);
+  function handleThemePreferenceChange(nextPreference: ThemePreference) {
+    localStorage.setItem("palabradeldia_theme_preference", nextPreference);
+    setThemePreference(nextPreference);
+  }
 
-  setThemePreference((currentPreference) => {
-    if (currentPreference === nextPreference) {
-      return nextPreference;
-    }
-
-    return nextPreference;
-  });
-}
-
-const dayPeriod = useDayPeriod(themePreference);
-const theme = getThemeClasses(dayPeriod);
+  const dayPeriod = useDayPeriod(themePreference);
+  const theme = getThemeClasses(dayPeriod);
+  const themeRenderKey = `${themePreference}-${dayPeriod}`;
 
   const [activeTab, setActiveTab] = useState<Tab>("evangelio");
   const [authMode, setAuthMode] = useState<"signup" | "login" | null>(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
-  const {
-    diaryEntries,
-    setDiaryEntries,
-    isLoadingDiary,
-    syncMessage,
-  } = useDiaryEntries(authUser?.id);
+  const { diaryEntries, setDiaryEntries, syncMessage } = useDiaryEntries(
+    authUser?.id
+  );
 
   const {
     communityPosts,
@@ -135,11 +130,8 @@ const theme = getThemeClasses(dayPeriod);
   }
 
   function toggleGospel(id: number | string) {
-    setOpenGospelEntryId((currentId) =>
-    currentId === id ? null : id
-    );
+    setOpenGospelEntryId((currentId) => (currentId === id ? null : id));
   }
-
 
   useEffect(() => {
     function handleOpenReflection(event: Event) {
@@ -156,10 +148,16 @@ const theme = getThemeClasses(dayPeriod);
       }, 120);
     }
 
-    window.addEventListener("palabradeldia:open-reflection", handleOpenReflection);
+    window.addEventListener(
+      "palabradeldia:open-reflection",
+      handleOpenReflection
+    );
 
     return () => {
-      window.removeEventListener("palabradeldia:open-reflection", handleOpenReflection);
+      window.removeEventListener(
+        "palabradeldia:open-reflection",
+        handleOpenReflection
+      );
     };
   }, []);
 
@@ -178,7 +176,7 @@ const theme = getThemeClasses(dayPeriod);
     <main
       className={`min-h-screen px-4 pb-24 pt-3 transition-colors duration-700 sm:px-6 sm:py-8 ${theme.page}`}
     >
-      <section className="mx-auto max-w-4xl">
+      <section key={themeRenderKey} className="mx-auto max-w-4xl">
         <Header
           user={currentUser}
           theme={theme}
@@ -189,29 +187,30 @@ const theme = getThemeClasses(dayPeriod);
           onSignOut={signOut}
         />
 
-
-        <TabsNav
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          theme={theme}
-        />
+        <TabsNav activeTab={activeTab} onTabChange={setActiveTab} theme={theme} />
 
         {isLoadingGospel && (
-          <div className={`mb-6 rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm backdrop-blur ${theme.innerCard} ${theme.primaryText}`}>
+          <div
+            className={`mb-6 rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm backdrop-blur ${theme.innerCard} ${theme.primaryText}`}
+          >
             Cargando Evangelio del día...
           </div>
         )}
 
         {saveMessage && (
-        <div className="fixed left-1/2 top-24 z-[200] w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2">
-        <div className={`rounded-2xl border px-5 py-4 text-center text-sm font-semibold shadow-2xl backdrop-blur ${theme.card} ${theme.primaryText}`}>
-        {saveMessage}
-        </div>
-        </div>
+          <div className="fixed left-1/2 top-24 z-[200] w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2">
+            <div
+              className={`rounded-2xl border px-5 py-4 text-center text-sm font-semibold shadow-2xl backdrop-blur ${theme.card} ${theme.primaryText}`}
+            >
+              {saveMessage}
+            </div>
+          </div>
         )}
 
         {syncMessage && (
-          <div className={`mb-6 rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm backdrop-blur ${theme.innerCard} ${theme.primaryText}`}>
+          <div
+            className={`mb-6 rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm backdrop-blur ${theme.innerCard} ${theme.primaryText}`}
+          >
             {syncMessage}
           </div>
         )}
@@ -225,51 +224,56 @@ const theme = getThemeClasses(dayPeriod);
               shareReflection={shareReflection}
               selectedTags={selectedTags}
               isAuthenticated={isAuthenticated}
+              isLoading={!todayGospel}
               onReflectionChange={setReflection}
               onShareChange={setShareReflection}
               onTagsChange={setSelectedTags}
               onSave={handleSaveReflection}
-              isLoading={!todayGospel}
             />
           )}
 
-         {activeTab === "diario" && (
-         <motion.div
-          key="diario"
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -18 }}
-          transition={{ duration: 0.35 }}
-          className="space-y-6"
-          >
-          <DiarySection
-            diaryEntries={diaryEntries}
-            gospels={[
-              todayGospel,
-              ...gospels.filter((g) => g.date !== todayGospel?.date),
-            ].filter(Boolean)}
-            theme={theme}
-            onDelete={deleteEntry}
-            onToggleShared={toggleShared}
-            onToggleFavorite={toggleFavorite}
-            openGospelEntryId={openGospelEntryId}
-            onToggleGospel={toggleGospel}
-            onGoToGospel={() => setActiveTab("evangelio")}
-            footer={<DiaryStats diaryEntries={diaryEntries} theme={theme} />}
-          />
-          </motion.div>
+          {activeTab === "diario" && (
+            <motion.div
+              key="diario"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -18 }}
+              transition={{ duration: 0.35 }}
+              className="space-y-6"
+            >
+              <DiarySection
+                diaryEntries={diaryEntries}
+                gospels={[
+                  todayGospel,
+                  ...gospels.filter((g) => g.date !== todayGospel?.date),
+                ].filter(Boolean)}
+                theme={theme}
+                onDelete={deleteEntry}
+                onToggleShared={toggleShared}
+                onToggleFavorite={toggleFavorite}
+                openGospelEntryId={openGospelEntryId}
+                onToggleGospel={toggleGospel}
+                onGoToGospel={() => setActiveTab("evangelio")}
+                footer={<DiaryStats diaryEntries={diaryEntries} theme={theme} />}
+              />
+            </motion.div>
           )}
 
           {activeTab === "comunidad" &&
             (isAuthenticated ? (
               isLoadingCommunity ? (
-                <div className={`rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm backdrop-blur ${theme.innerCard} ${theme.primaryText}`}>
+                <div
+                  className={`rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm backdrop-blur ${theme.innerCard} ${theme.primaryText}`}
+                >
                   Cargando comunidad...
                 </div>
               ) : (
                 <CommunitySection
                   posts={communityPosts}
-                  gospels={[todayGospel, ...gospels.filter(g => g.date !== todayGospel?.date)]}
+                  gospels={[
+                    todayGospel,
+                    ...gospels.filter((g) => g.date !== todayGospel?.date),
+                  ].filter(Boolean)}
                   currentUser={currentUser}
                   followingIds={followingIds}
                   theme={theme}
@@ -283,10 +287,14 @@ const theme = getThemeClasses(dayPeriod);
               <AuthRequiredCard onOpenAuth={setAuthMode} theme={theme} />
             ))}
         </div>
+
         <div className="my-10 border-t border-[#5f6f52]/25" />
-        <DailyReminderCard theme={theme}/>
+
+        <DailyReminderCard theme={theme} />
+
         <div className="my-10" />
-        <InstallAppButton theme={theme}/>
+
+        <InstallAppButton theme={theme} />
       </section>
 
       {authMode && (
@@ -300,19 +308,20 @@ const theme = getThemeClasses(dayPeriod);
 
       {isEditProfileOpen && (
         <EditProfileModal
-        user={currentUser}
-        theme={theme}
-        themePreference={themePreference}
-        onThemePreferenceChange={handleThemePreferenceChange}
-        onProfileUpdated={handleProfileUpdated}
-        onClose={() => setIsEditProfileOpen(false)}
+          user={currentUser}
+          theme={theme}
+          themePreference={themePreference}
+          onThemePreferenceChange={handleThemePreferenceChange}
+          onProfileUpdated={handleProfileUpdated}
+          onClose={() => setIsEditProfileOpen(false)}
         />
       )}
+
       <GuidedGuestTour
-      isAuthenticated={isAuthenticated}
-      activeTab={activeTab}
-      onTabChange={setActiveTab}
-      theme={theme}
+        isAuthenticated={isAuthenticated}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        theme={theme}
       />
     </main>
   );
