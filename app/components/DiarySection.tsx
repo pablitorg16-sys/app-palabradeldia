@@ -7,7 +7,7 @@ import type { DiaryEntry, Gospel } from "../types";
 import DiaryEntryCard from "./DiaryEntryCard";
 import DiaryFilters from "./DiaryFilters";
 import DiarySkeleton from "./skeletons/DiarySkeleton";
-
+import { getLiturgicalDaysByDates } from "../utils/liturgicalDays";
 type DiarySectionProps = {
   diaryEntries: DiaryEntry[];
   gospels: Gospel[];
@@ -103,10 +103,63 @@ export default function DiarySection({
   const paginatedEntries = visibleEntries.slice(0, visibleLimit);
   const hasMoreEntries = visibleEntries.length > visibleLimit;
   const isDiaryCompletelyEmpty = diaryEntries.length === 0;
+const [supabaseGospels, setSupabaseGospels] = useState<Gospel[]>([]);
+  function normalizeGospelDate(date?: string) {
+  if (!date) return "";
 
-  function getGospelForEntry(entry: DiaryEntry) {
-    return gospels.find((gospel) => gospel.date === entry.gospelDate);
+  if (date.includes("-")) {
+    return date;
   }
+
+  const [day, month, year] = date.split("/");
+
+  if (!day || !month || !year) {
+    return date;
+  }
+
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+}
+
+function getGospelForEntry(entry: DiaryEntry) {
+  const normalizedEntryDate = normalizeGospelDate(entry.gospelDate);
+
+  const gospelByDate = availableGospels.find(
+    (gospel) => normalizeGospelDate(gospel.date) === normalizedEntryDate
+  );
+
+  if (gospelByDate) return gospelByDate;
+
+  return availableGospels.find(
+    (gospel) => gospel.reference === entry.gospelReference
+  );
+}
+
+const gospelDates = useMemo(() => {
+  return Array.from(
+    new Set(
+      diaryEntries
+        .map((entry) => normalizeGospelDate(entry.gospelDate))
+        .filter(Boolean)
+    )
+  );
+}, [diaryEntries]);
+useEffect(() => {
+  async function loadAssociatedGospels() {
+    const loadedGospels = await getLiturgicalDaysByDates(gospelDates);
+    setSupabaseGospels(loadedGospels);
+  }
+
+  void loadAssociatedGospels();
+}, [gospelDates]);
+const availableGospels = useMemo(() => {
+  const byDate = new Map<string, Gospel>();
+
+  [...supabaseGospels, ...gospels].forEach((gospel) => {
+    byDate.set(normalizeGospelDate(gospel.date), gospel);
+  });
+
+  return Array.from(byDate.values());
+}, [supabaseGospels, gospels]);
 
   if (isLoadingDiary) {
     return <DiarySkeleton theme={theme} />;

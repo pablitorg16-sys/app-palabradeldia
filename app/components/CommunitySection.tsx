@@ -58,8 +58,10 @@ export default function CommunitySection({
   );
 
   const gospelDates = useMemo(() => {
-    return posts.map((post) => normalizeDate(post.gospelDate)).filter(Boolean);
-  }, [posts]);
+  return Array.from(
+    new Set(posts.map((post) => normalizeDate(post.gospelDate)).filter(Boolean))
+  );
+}, [posts]);
 
   useEffect(() => {
   setIsLoadingCommunity(true);
@@ -90,8 +92,14 @@ export default function CommunitySection({
   }, [gospelDates]);
 
   const availableGospels = useMemo(() => {
-    return [...supabaseGospels, ...gospels];
-  }, [supabaseGospels, gospels]);
+  const byDate = new Map<string, Gospel>();
+
+  [...supabaseGospels, ...gospels].forEach((gospel) => {
+    byDate.set(normalizeDate(gospel.date), gospel);
+  });
+
+  return Array.from(byDate.values());
+}, [supabaseGospels, gospels]);
 
   function renderFeedButton(mode: CommunityFeedMode, label: string) {
     const isActive = feedMode === mode;
