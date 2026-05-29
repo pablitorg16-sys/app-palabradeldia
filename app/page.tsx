@@ -181,7 +181,9 @@ const theme = getThemeClasses(dayPeriod);
           onOpenProfileSettings={() => setIsEditProfileOpen(true)}
           onSignOut={signOut}
         />
-
+<div className="fixed bottom-20 right-4 z-[999] rounded-full bg-black px-3 py-2 text-xs font-bold text-white">
+  Tema: {theme.mode}
+</div>
 
         <TabsNav
           activeTab={activeTab}

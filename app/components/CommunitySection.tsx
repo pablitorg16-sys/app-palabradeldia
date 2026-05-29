@@ -131,11 +131,7 @@ if (isLoadingCommunity) {
       </div>
 
       <div
-        className={`inline-flex rounded-full border p-1 shadow-sm ${
-          theme.mode === "night"
-            ? "border-[#d9e2cf]/15 bg-[#263126]"
-            : "border-[#d8d1c0] bg-[#f8f4ea]"
-        }`}
+        className={`inline-flex rounded-full border p-1 shadow-sm ${theme.innerCard}`}
       >
         {renderFeedButton("popular", "Populares")}
         {renderFeedButton("following", "Siguiendo")}

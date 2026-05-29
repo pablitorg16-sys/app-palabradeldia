@@ -33,8 +33,8 @@ export default function CommunitySkeleton({ theme }: CommunitySkeletonProps) {
       <div
         className={`inline-flex rounded-full border p-1 shadow-sm ${
           theme.mode === "night"
-            ? "border-[#d9e2cf]/15 bg-[#263126]"
-            : "border-[#d8d1c0] bg-[#f8f4ea]"
+  ? "border-[#9aa58f]/20 bg-[#3d493f]/45"
+  : "border-[#d8d1c0] bg-[#f8f4ea]"
         }`}
       >
         <SkeletonBlock theme={theme} className="h-9 w-24" />

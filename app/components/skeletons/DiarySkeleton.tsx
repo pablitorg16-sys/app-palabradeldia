@@ -29,8 +29,8 @@ export default function DiarySkeleton({ theme }: DiarySkeletonProps) {
       <div
         className={`rounded-[2rem] border p-3 shadow-sm ${
           theme.mode === "night"
-            ? "border-[#d9e2cf]/10 bg-[#263126]"
-            : "border-[#d8d1c0] bg-[#f8f4ea]"
+  ? "border-[#9aa58f]/20 bg-[#3d493f]/45"
+  : "border-[#d8d1c0] bg-[#f8f4ea]"
         }`}
       >
         <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
