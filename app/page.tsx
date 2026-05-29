@@ -59,8 +59,15 @@ export default function Home() {
   }, []);
 
 function handleThemePreferenceChange(nextPreference: ThemePreference) {
-  setThemePreference(nextPreference);
   localStorage.setItem("palabradeldia_theme_preference", nextPreference);
+
+  setThemePreference((currentPreference) => {
+    if (currentPreference === nextPreference) {
+      return nextPreference;
+    }
+
+    return nextPreference;
+  });
 }
 
 const dayPeriod = useDayPeriod(themePreference);
