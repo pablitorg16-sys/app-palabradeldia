@@ -1,21 +1,17 @@
+"use client";
+
+import { getThemeClasses } from "../utils/theme";
 import type { Gospel } from "../types";
 
 type GospelCardProps = {
   gospel: Gospel;
-  theme: {
-    card: string;
-    accentText: string;
-    primaryText: string;
-    bodyText: string;
-    pill: string;
-  };
 };
 
-export default function GospelCard({ gospel, theme }: GospelCardProps) {
+export default function GospelCard({ gospel }: GospelCardProps) {
+  const theme = getThemeClasses();
+
   return (
-    <article
-      className={`relative overflow-hidden rounded-[2rem] border px-5 py-6 shadow-sm backdrop-blur sm:rounded-[2.25rem] sm:px-10 sm:py-10 ${theme.card}`}
-    >
+    <article className={`relative overflow-hidden rounded-[2rem] border px-5 py-6 shadow-sm backdrop-blur sm:rounded-[2.25rem] sm:px-10 sm:py-10 ${theme.card}`}>
       <div
         className="absolute inset-0 opacity-[0.045] sm:opacity-[0.06]"
         style={{
@@ -32,12 +28,9 @@ export default function GospelCard({ gospel, theme }: GospelCardProps) {
 
       <div className="relative z-10">
         <div className="mb-6 flex items-center justify-between gap-3 sm:mb-8">
-          <p
-            className={`rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] sm:px-4 sm:py-2 sm:text-[11px] sm:tracking-[0.28em] ${theme.pill}`}
-          >
+          <p className={`rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] sm:px-4 sm:py-2 sm:text-[11px] sm:tracking-[0.28em] ${theme.pill}`}>
             Evangelio del día
           </p>
-
           <p className={`shrink-0 text-xs font-semibold sm:text-sm ${theme.accentText}`}>
             {new Date(gospel.date).toLocaleDateString("es-ES")}
           </p>
@@ -45,21 +38,16 @@ export default function GospelCard({ gospel, theme }: GospelCardProps) {
 
         <div className="mb-8 sm:mb-12">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 sm:gap-x-3">
-            <p
-              className={`text-sm font-bold uppercase tracking-[0.18em] sm:text-lg sm:tracking-[0.22em] ${theme.accentText}`}
-            >
+            <p className={`text-sm font-bold uppercase tracking-[0.18em] sm:text-lg sm:tracking-[0.22em] ${theme.accentText}`}>
               {gospel.reference}
             </p>
-
             <p className={`text-sm italic sm:text-lg ${theme.accentText}`}>
-              “{gospel.title}”
+              "{gospel.title}"
             </p>
           </div>
         </div>
 
-        <blockquote
-          className={`max-w-3xl text-[1rem] font-normal leading-7 tracking-[-0.01em] sm:text-[1.18rem] sm:leading-9 ${theme.bodyText}`}
-        >
+        <blockquote className={`max-w-3xl text-[1rem] font-normal leading-7 tracking-[-0.01em] sm:text-[1.18rem] sm:leading-9 ${theme.bodyText}`}>
           {gospel.text}
         </blockquote>
       </div>

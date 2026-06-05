@@ -2,7 +2,6 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import type { ThemePreference } from "./hooks/useDayPeriod";
 
 import AuthModal from "./components/AuthModal";
 import AuthRequiredCard from "./components/AuthRequiredCard";
@@ -22,105 +21,48 @@ import { gospels } from "./data/gospels";
 import { useAuth } from "./hooks/useAuth";
 import { useCommunityActions } from "./hooks/useCommunityActions";
 import { useCommunityPosts } from "./hooks/useCommunityPosts";
-import { useDayPeriod } from "./hooks/useDayPeriod";
 import { useDiaryActions } from "./hooks/useDiaryActions";
 import { useDiaryEntries } from "./hooks/useDiaryEntries";
 import { useReflectionForm } from "./hooks/useReflectionForm";
 import { useSaveFeedback } from "./hooks/useSaveFeedback";
 import { useTodayGospel } from "./hooks/useTodayGospel";
 import { useUserProfile } from "./hooks/useUserProfile";
+import { useTheme } from "./context/ThemeContext";
 
 import type { CommunityPost, Tab } from "./types";
 import { getThemeClasses } from "./utils/theme";
 
 export default function Home() {
   const { todayGospel, isLoadingGospel } = useTodayGospel();
+  const theme = getThemeClasses();
 
-  const [openGospelEntryId, setOpenGospelEntryId] = useState<
-    number | string | null
-  >(null);
+  const [openGospelEntryId, setOpenGospelEntryId] = useState<number | string | null>(null);
 
   const { user: authUser, isAuthenticated, signOut } = useAuth();
   const { currentUser, refreshProfile } = useUserProfile(authUser);
-
-  const [themePreference, setThemePreference] =
-    useState<ThemePreference>("auto");
-
-  useEffect(() => {
-    const savedPreference = localStorage.getItem(
-      "palabradeldia_theme_preference"
-    ) as ThemePreference | null;
-
-    if (
-      savedPreference === "auto" ||
-      savedPreference === "sunrise" ||
-      savedPreference === "day" ||
-      savedPreference === "sunset" ||
-      savedPreference === "night"
-    ) {
-      setThemePreference(savedPreference);
-    }
-  }, []);
-
-  function handleThemePreferenceChange(nextPreference: ThemePreference) {
-    localStorage.setItem("palabradeldia_theme_preference", nextPreference);
-    setThemePreference(nextPreference);
-  }
-
-  const dayPeriod = useDayPeriod(themePreference);
-  const theme = getThemeClasses(dayPeriod);
-  const themeRenderKey = `${themePreference}-${dayPeriod}`;
 
   const [activeTab, setActiveTab] = useState<Tab>("evangelio");
   const [authMode, setAuthMode] = useState<"signup" | "login" | null>(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
-  const { diaryEntries, setDiaryEntries, syncMessage } = useDiaryEntries(
-    authUser?.id
-  );
+  const { diaryEntries, setDiaryEntries, syncMessage } = useDiaryEntries(authUser?.id);
 
-  const {
-    communityPosts,
-    followingIds,
-    isLoadingCommunity,
-    refreshCommunityPosts,
-  } = useCommunityPosts(isAuthenticated, authUser?.id);
+  const { communityPosts, followingIds, isLoadingCommunity, refreshCommunityPosts } =
+    useCommunityPosts(isAuthenticated, authUser?.id);
 
-  const {
-    reflection,
-    setReflection,
-    shareReflection,
-    setShareReflection,
-    selectedTags,
-    setSelectedTags,
-    resetReflectionForm,
-  } = useReflectionForm();
+  const { reflection, setReflection, shareReflection, setShareReflection,
+    selectedTags, setSelectedTags, resetReflectionForm } = useReflectionForm();
 
-  const {
-    saveReflection,
-    saveCommunityPostToDiary,
-    deleteEntry,
-    toggleShared,
-    toggleFavorite,
-  } = useDiaryActions({
-    diaryEntries,
-    setDiaryEntries,
-    userId: authUser?.id,
-    onCommunityChange: refreshCommunityPosts,
-  });
+  const { saveReflection, saveCommunityPostToDiary, deleteEntry, toggleShared, toggleFavorite } =
+    useDiaryActions({ diaryEntries, setDiaryEntries, userId: authUser?.id, onCommunityChange: refreshCommunityPosts });
 
-  const { toggleLike } = useCommunityActions({
-    userId: authUser?.id,
-    onAfterChange: refreshCommunityPosts,
-  });
+  const { toggleLike } = useCommunityActions({ userId: authUser?.id, onAfterChange: refreshCommunityPosts });
 
   const { saveMessage, showSaveMessage } = useSaveFeedback();
 
   function handleSaveReflection() {
     saveReflection({
-      reflection,
-      shareReflection,
-      selectedTags,
+      reflection, shareReflection, selectedTags,
       selectedGospel: todayGospel,
       onAfterSave: () => {
         resetReflectionForm();
@@ -130,35 +72,23 @@ export default function Home() {
   }
 
   function toggleGospel(id: number | string) {
-    setOpenGospelEntryId((currentId) => (currentId === id ? null : id));
+    setOpenGospelEntryId((current) => (current === id ? null : id));
   }
 
   useEffect(() => {
     function handleOpenReflection(event: Event) {
       const customEvent = event as CustomEvent<{ reflectionId?: string }>;
       const reflectionId = customEvent.detail?.reflectionId;
-
       if (!reflectionId) return;
-
       setActiveTab("comunidad");
-
       window.setTimeout(() => {
-        const target = document.getElementById(`reflection-${reflectionId}`);
-        target?.scrollIntoView({ behavior: "smooth", block: "center" });
+        document.getElementById(`reflection-${reflectionId}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 120);
     }
 
-    window.addEventListener(
-      "palabradeldia:open-reflection",
-      handleOpenReflection
-    );
-
-    return () => {
-      window.removeEventListener(
-        "palabradeldia:open-reflection",
-        handleOpenReflection
-      );
-    };
+    window.addEventListener("palabradeldia:open-reflection", handleOpenReflection);
+    return () => window.removeEventListener("palabradeldia:open-reflection", handleOpenReflection);
   }, []);
 
   async function handleProfileUpdated() {
@@ -172,14 +102,16 @@ export default function Home() {
     refreshCommunityPosts();
   }
 
+  const allGospels = [
+    todayGospel,
+    ...gospels.filter((g) => g.date !== todayGospel?.date),
+  ].filter(Boolean);
+
   return (
-    <main
-      className={`min-h-screen px-4 pb-24 pt-3 transition-colors duration-700 sm:px-6 sm:py-8 ${theme.page}`}
-    >
-      <section key={themeRenderKey} className="mx-auto max-w-4xl">
+    <main className={`min-h-screen px-4 pb-24 pt-3 sm:px-6 sm:py-8 ${theme.page}`}>
+      <section className="mx-auto max-w-4xl">
         <Header
           user={currentUser}
-          theme={theme}
           diaryEntries={diaryEntries}
           isAuthenticated={isAuthenticated}
           onOpenAuth={setAuthMode}
@@ -187,30 +119,24 @@ export default function Home() {
           onSignOut={signOut}
         />
 
-        <TabsNav activeTab={activeTab} onTabChange={setActiveTab} theme={theme} />
+        <TabsNav activeTab={activeTab} onTabChange={setActiveTab} />
 
         {isLoadingGospel && (
-          <div
-            className={`mb-6 rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm backdrop-blur ${theme.innerCard} ${theme.primaryText}`}
-          >
+          <div className={`mb-6 rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm backdrop-blur ${theme.innerCard} ${theme.primaryText}`}>
             Cargando Evangelio del día...
           </div>
         )}
 
         {saveMessage && (
           <div className="fixed left-1/2 top-24 z-[200] w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2">
-            <div
-              className={`rounded-2xl border px-5 py-4 text-center text-sm font-semibold shadow-2xl backdrop-blur ${theme.card} ${theme.primaryText}`}
-            >
+            <div className={`rounded-2xl border px-5 py-4 text-center text-sm font-semibold shadow-2xl backdrop-blur ${theme.card} ${theme.primaryText}`}>
               {saveMessage}
             </div>
           </div>
         )}
 
         {syncMessage && (
-          <div
-            className={`mb-6 rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm backdrop-blur ${theme.innerCard} ${theme.primaryText}`}
-          >
+          <div className={`mb-6 rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm backdrop-blur ${theme.innerCard} ${theme.primaryText}`}>
             {syncMessage}
           </div>
         )}
@@ -219,7 +145,6 @@ export default function Home() {
           {activeTab === "evangelio" && (
             <GospelSection
               gospel={todayGospel}
-              theme={theme}
               reflection={reflection}
               shareReflection={shareReflection}
               selectedTags={selectedTags}
@@ -243,40 +168,30 @@ export default function Home() {
             >
               <DiarySection
                 diaryEntries={diaryEntries}
-                gospels={[
-                  todayGospel,
-                  ...gospels.filter((g) => g.date !== todayGospel?.date),
-                ].filter(Boolean)}
-                theme={theme}
+                gospels={allGospels}
                 onDelete={deleteEntry}
                 onToggleShared={toggleShared}
                 onToggleFavorite={toggleFavorite}
                 openGospelEntryId={openGospelEntryId}
                 onToggleGospel={toggleGospel}
                 onGoToGospel={() => setActiveTab("evangelio")}
-                footer={<DiaryStats diaryEntries={diaryEntries} theme={theme} />}
+                footer={<DiaryStats diaryEntries={diaryEntries} />}
               />
             </motion.div>
           )}
 
-          {activeTab === "comunidad" &&
-            (isAuthenticated ? (
+          {activeTab === "comunidad" && (
+            isAuthenticated ? (
               isLoadingCommunity ? (
-                <div
-                  className={`rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm backdrop-blur ${theme.innerCard} ${theme.primaryText}`}
-                >
+                <div className={`rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm backdrop-blur ${theme.innerCard} ${theme.primaryText}`}>
                   Cargando comunidad...
                 </div>
               ) : (
                 <CommunitySection
                   posts={communityPosts}
-                  gospels={[
-                    todayGospel,
-                    ...gospels.filter((g) => g.date !== todayGospel?.date),
-                  ].filter(Boolean)}
+                  gospels={allGospels}
                   currentUser={currentUser}
                   followingIds={followingIds}
-                  theme={theme}
                   onToggleLike={toggleLike}
                   onSaveToDiary={handleSaveCommunityPostToDiary}
                   onFollowChange={refreshCommunityPosts}
@@ -284,23 +199,20 @@ export default function Home() {
                 />
               )
             ) : (
-              <AuthRequiredCard onOpenAuth={setAuthMode} theme={theme} />
-            ))}
+              <AuthRequiredCard onOpenAuth={setAuthMode} />
+            )
+          )}
         </div>
 
-        <div className="my-10 border-t border-[#5f6f52]/25" />
-
-        <DailyReminderCard theme={theme} />
-
+        <div className="my-10 border-t border-[var(--divider)]" />
+        <DailyReminderCard />
         <div className="my-10" />
-
-        <InstallAppButton theme={theme} />
+        <InstallAppButton />
       </section>
 
       {authMode && (
         <AuthModal
           mode={authMode}
-          theme={theme}
           onModeChange={setAuthMode}
           onClose={() => setAuthMode(null)}
         />
@@ -309,9 +221,6 @@ export default function Home() {
       {isEditProfileOpen && (
         <EditProfileModal
           user={currentUser}
-          theme={theme}
-          themePreference={themePreference}
-          onThemePreferenceChange={handleThemePreferenceChange}
           onProfileUpdated={handleProfileUpdated}
           onClose={() => setIsEditProfileOpen(false)}
         />
@@ -321,7 +230,6 @@ export default function Home() {
         isAuthenticated={isAuthenticated}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        theme={theme}
       />
     </main>
   );

@@ -71,30 +71,35 @@ export async function getUserReflections(userId: string) {
     return { entries: [], error };
   }
 
-  const entries = await Promise.all(
-    data.map(async (row) => {
-      const entry = mapRowToDiaryEntry(row);
-const { count, error } = await supabase
-  .from("reflection_likes")
-  .select("*", { count: "exact", head: true })
-  .eq("reflection_id", row.id);
+  // Una sola query para todos los likes — en lugar de N queries
+  const reflectionIds = data.map((row) => row.id);
 
-if (error) {
-  console.error("Error loading reflection likes count:", error.message);
+  const { data: likesData, error: likesError } = await supabase
+    .from("reflection_likes")
+    .select("reflection_id")
+    .in("reflection_id", reflectionIds);
+
+  if (likesError) {
+    console.error("Error loading likes:", likesError.message);
+  }
+
+  // Construir el mapa de conteos en JS — O(N) en lugar de N queries
+  const likesCountMap = new Map<string, number>();
+  likesData?.forEach((row) => {
+    likesCountMap.set(
+      row.reflection_id,
+      (likesCountMap.get(row.reflection_id) ?? 0) + 1
+    );
+  });
+
+  const entries = data.map((row) => ({
+    ...mapRowToDiaryEntry(row),
+    likes: likesCountMap.get(row.id) ?? 0,
+  }));
+
+  return { entries, error: null };
 }
 
-return {
-  ...entry,
-  likes: count ?? 0,
-};
-    })
-  );
-
-  return {
-    entries,
-    error: null,
-  };
-}
 
 export async function updateReflection(
   id: string | number,

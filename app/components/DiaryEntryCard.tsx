@@ -3,22 +3,10 @@
 import { useState } from "react";
 import type { DiaryEntry, Gospel } from "../types";
 import GospelPreview from "./GospelPreview";
-
-type Theme = {
-  mode?: string;
-  card: string;
-  innerCard: string;
-  mutedButton: string;
-  accentText: string;
-  primaryText: string;
-  bodyText: string;
-  mutedText: string;
-  pill: string;
-};
+import { getThemeClasses } from "../utils/theme";
 
 type DiaryEntryCardProps = {
   entry: DiaryEntry;
-  theme: Theme;
   gospel?: Gospel;
   isGospelOpen: boolean;
   onDelete: (id: number | string) => void;
@@ -29,7 +17,6 @@ type DiaryEntryCardProps = {
 
 export default function DiaryEntryCard({
   entry,
-  theme,
   gospel,
   isGospelOpen,
   onDelete,
@@ -37,18 +24,18 @@ export default function DiaryEntryCard({
   onToggleFavorite,
   onToggleGospel,
 }: DiaryEntryCardProps) {
+  const theme = getThemeClasses();
   const [showTags, setShowTags] = useState(false);
   const [showActions, setShowActions] = useState(false);
 
   const entryId = entry.id;
   const hasTags = entry.tags.length > 0;
-
   const sourceText =
     entry.source === "community"
       ? `Guardada de comunidad${entry.originalAuthor ? ` · ${entry.originalAuthor}` : ""}`
       : "Escrita por mí";
 
-  const exportReflectionToPdf = () => {
+  function exportReflectionToPdf() {
     localStorage.setItem(
       "palabradeldia_reflection_pdf",
       JSON.stringify({
@@ -64,30 +51,25 @@ export default function DiaryEntryCard({
         date: entry.date,
       })
     );
-
     window.location.href = "/reflexion-pdf";
-  };
+  }
 
   return (
-    <article id={`reflection-${entry.id}`} className={`rounded-[2rem] border p-5 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-[1px] ${theme.innerCard}`}>
-      
+    <article
+      id={`reflection-${entry.id}`}
+      className={`rounded-[2rem] border p-5 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-[1px] ${theme.innerCard}`}
+    >
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <p className={`text-sm font-bold ${theme.accentText}`}>
-            {entry.date} · {entry.time}
-          </p>
-
-          <p className={`mt-1 text-xs font-medium uppercase tracking-[0.14em] ${theme.mutedText}`}>
-  {sourceText}
-</p>
+          <p className={`text-sm font-bold ${theme.accentText}`}>{entry.date} · {entry.time}</p>
+          <p className={`mt-1 text-xs font-medium uppercase tracking-[0.14em] ${theme.mutedText}`}>{sourceText}</p>
         </div>
-
         <button
-  onClick={() => setShowActions(!showActions)}
-  className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${theme.mutedButton}`}
->
-  ···
-</button>
+          onClick={() => setShowActions(!showActions)}
+          className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${theme.mutedButton}`}
+        >
+          ···
+        </button>
       </div>
 
       <p className={`text-[1rem] leading-7 ${theme.bodyText}`}>{entry.text}</p>
@@ -122,20 +104,16 @@ export default function DiaryEntryCard({
         )}
 
         {entry.source === "own" && entry.shared && (
-        <span className={`rounded-full border px-3 py-1 text-sm font-semibold ${theme.pill}`}>
-          ♥ {entry.likes ?? 0} me gusta
-        </span>
+          <span className={`rounded-full border px-3 py-1 text-sm font-semibold ${theme.pill}`}>
+            ♥ {entry.likes ?? 0} me gusta
+          </span>
         )}
-        
       </div>
 
       {showTags && hasTags && (
         <div className="mt-4 flex flex-wrap gap-2">
           {entry.tags.map((tag) => (
-            <span
-              key={tag.id}
-              className={`rounded-full border px-3 py-1 text-sm font-semibold ${theme.pill}`}
-            >
+            <span key={tag.id} className={`rounded-full border px-3 py-1 text-sm font-semibold ${theme.pill}`}>
               <span className="mr-1">{tag.emoji}</span>
               {tag.label}
             </span>
@@ -148,9 +126,7 @@ export default function DiaryEntryCard({
           <button
             onClick={() => onToggleFavorite(entryId)}
             className={`rounded-full border px-3 py-1 text-sm font-semibold transition ${
-              entry.favorite
-                ? "border-amber-200 bg-amber-100 text-amber-800"
-                : theme.mutedButton
+              entry.favorite ? "border-amber-200 bg-amber-100 text-amber-800" : theme.mutedButton
             }`}
           >
             {entry.favorite ? "Quitar favorita" : "Marcar favorita"}
@@ -160,9 +136,7 @@ export default function DiaryEntryCard({
             <button
               onClick={() => onToggleShared(entryId)}
               className={`rounded-full border px-3 py-1 text-sm font-semibold transition ${
-                entry.shared
-                  ? "border-emerald-200 bg-emerald-100 text-emerald-800"
-                  : theme.mutedButton
+                entry.shared ? "border-emerald-200 bg-emerald-100 text-emerald-800" : theme.mutedButton
               }`}
             >
               {entry.shared ? "Hacer privada" : "Compartir con la comunidad"}
@@ -185,7 +159,7 @@ export default function DiaryEntryCard({
         </div>
       )}
 
-      {isGospelOpen && <GospelPreview gospel={gospel} theme={theme} />}
+      {isGospelOpen && <GospelPreview gospel={gospel} />}
     </article>
   );
 }

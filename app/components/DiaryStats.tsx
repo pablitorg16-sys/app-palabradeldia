@@ -1,42 +1,19 @@
+"use client";
+
+import { getThemeClasses } from "../utils/theme";
 import type { DiaryEntry } from "../types";
 
 type DiaryStatsProps = {
   diaryEntries: DiaryEntry[];
-  theme: {
-    card: string;
-    accentText: string;
-    primaryText: string;
-    bodyText: string;
-  };
 };
 
-export default function DiaryStats({
-  diaryEntries,
-  theme,
-}: DiaryStatsProps) {
-  const totalEntries = diaryEntries.length;
-
-  const sharedEntries = diaryEntries.filter(
-    (entry) => entry.shared
-  ).length;
-
-  const favoriteEntries = diaryEntries.filter(
-    (entry) => entry.favorite
-  ).length;
+export default function DiaryStats({ diaryEntries }: DiaryStatsProps) {
+  const theme = getThemeClasses();
 
   const stats = [
-    {
-      label: "Reflexiones",
-      value: totalEntries,
-    },
-    {
-      label: "Compartidas",
-      value: sharedEntries,
-    },
-    {
-      label: "Favoritas",
-      value: favoriteEntries,
-    },
+    { label: "Reflexiones", value: diaryEntries.length },
+    { label: "Compartidas", value: diaryEntries.filter((e) => e.shared).length },
+    { label: "Favoritas",   value: diaryEntries.filter((e) => e.favorite).length },
   ];
 
   return (
@@ -49,10 +26,7 @@ export default function DiaryStats({
           <p className={`text-2xl font-bold sm:text-3xl ${theme.primaryText}`}>
             {stat.value}
           </p>
-
-          <p
-            className={`mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.18em] ${theme.accentText}`}
-          >
+          <p className={`mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.18em] ${theme.accentText}`}>
             {stat.label}
           </p>
         </article>

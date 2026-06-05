@@ -1,13 +1,83 @@
 @import "tailwindcss";
 
-html,
-body {
-  overscroll-behavior-y: none;
-  min-height: 100%;
-  background: #e7eadf;
-  color: #292524;
+/* Tema día (por defecto) */
+:root,
+[data-theme="day"] {
+  --page-bg:     #e7eadf;
+  --card-bg:     #f8faf2;
+  --card-border: #5f6f52;
+  --soft-bg:     #f4f1e8;
+  --inner-bg:    #fdfdf8;
+  --input-bg:    rgba(255,255,255,0.7);
+  --muted-btn:   rgba(255,255,255,0.45);
+  --accent:      #4f6740;
+  --primary:     #26351f;
+  --body:        #44403c;
+  --muted:       #78716c;
+  --divider:     rgba(95,111,82,0.35);
+  --pill-bg:     rgba(255,255,255,0.55);
+  --btn-bg:      #26351f;
+  --btn-hover:   #34482a;
+  --btn-text:    #ffffff;
+}
+
+[data-theme="sunrise"] {
+  --page-bg:     #efe5d6;
+  --card-bg:     #fff7ed;
+  --card-border: #b98b5e;
+  --soft-bg:     #f8ead8;
+  --inner-bg:    rgba(255,255,255,0.45);
+  --input-bg:    rgba(255,255,255,0.7);
+  --muted-btn:   rgba(255,255,255,0.45);
+  --accent:      #8a5a32;
+  --primary:     #3f2f22;
+  --body:        #57534e;
+  --muted:       #78716c;
+  --divider:     rgba(185,139,94,0.35);
+  --pill-bg:     rgba(255,255,255,0.55);
+  --btn-bg:      #5a3b24;
+  --btn-hover:   #6f4a2e;
+  --btn-text:    #ffffff;
+}
+
+[data-theme="sunset"] {
+  --page-bg:     #e8ddd2;
+  --card-bg:     #f7eadf;
+  --card-border: #9f7556;
+  --soft-bg:     #ead5c2;
+  --inner-bg:    rgba(255,255,255,0.4);
+  --input-bg:    rgba(255,255,255,0.7);
+  --muted-btn:   rgba(255,255,255,0.45);
+  --accent:      #7a4f35;
+  --primary:     #3b2a22;
+  --body:        #57534e;
+  --muted:       #78716c;
+  --divider:     rgba(159,117,86,0.35);
+  --pill-bg:     rgba(255,255,255,0.55);
+  --btn-bg:      #4f3327;
+  --btn-hover:   #684434;
+  --btn-text:    #ffffff;
+}
+
+[data-theme="night"] {
+  --page-bg:     #202822;
+  --card-bg:     #2d372f;
+  --card-border: #7d8a75;
+  --soft-bg:     #334039;
+  --inner-bg:    rgba(61,73,63,0.45);
+  --input-bg:    rgba(32,40,34,0.6);
+  --muted-btn:   rgba(61,73,63,0.55);
+  --accent:      #c8d2bf;
+  --primary:     #f4f1e8;
+  --body:        #e7eadf;
+  --muted:       #b9c2b0;
+  --divider:     rgba(154,165,143,0.4);
+  --pill-bg:     rgba(61,73,63,0.8);
+  --btn-bg:      #e7eadf;
+  --btn-hover:   #ffffff;
+  --btn-text:    #26351f;
 }
 
 * {
-  box-sizing: border-box;
+  transition: background-color 0.7s, border-color 0.4s, color 0.3s;
 }

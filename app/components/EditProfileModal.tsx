@@ -4,61 +4,33 @@ import { useState } from "react";
 import type { User } from "../types";
 import { faithAvatars } from "../data/faithAvatars";
 import FaithAvatar from "./FaithAvatar";
-import {
-  updateUserProfile,
-  usernameExistsForAnotherUser,
-} from "../utils/profileSettings";
-import type { ThemePreference } from "../hooks/useDayPeriod";
-
-type EditProfileTheme = {
-  mode?: string;
-  card: string;
-  innerCard: string;
-  input: string;
-  mutedButton: string;
-  accentText: string;
-  primaryText: string;
-  bodyText: string;
-  mutedText: string;
-  button: string;
-};
+import { updateUserProfile, usernameExistsForAnotherUser } from "../utils/profileSettings";
+import { useTheme, type ThemePreference } from "../context/ThemeContext";
+import { getThemeClasses } from "../utils/theme";
 
 type EditProfileModalProps = {
   user: User;
-  theme: EditProfileTheme;
-  themePreference: ThemePreference;
-  onThemePreferenceChange: (preference: ThemePreference) => void;
   onClose: () => void;
   onProfileUpdated: () => void;
 };
 
-export default function EditProfileModal({
-  user,
-  theme,
-  themePreference,
-  onThemePreferenceChange,
-  onClose,
-  onProfileUpdated,
-}: EditProfileModalProps) {
+export default function EditProfileModal({ user, onClose, onProfileUpdated }: EditProfileModalProps) {
+  const { preference, theme: dayPeriod, setPreference } = useTheme();
+  const theme = getThemeClasses();
+
   const [name, setName] = useState(user.name);
   const [username, setUsername] = useState(user.username);
   const [bio, setBio] = useState(user.bio ?? "");
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl ?? "cross");
-
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   function normalizeUsername(value: string) {
-    return value
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "")
-      .replace(/[^a-z0-9._]/g, "");
+    return value.toLowerCase().trim().replace(/\s+/g, "").replace(/[^a-z0-9._]/g, "");
   }
 
   async function handleSave() {
     setMessage("");
-
     const cleanName = name.trim();
     const cleanUsername = normalizeUsername(username);
 
@@ -110,6 +82,11 @@ export default function EditProfileModal({
     onClose();
   }
 
+  const isNight = dayPeriod === "night";
+  const selectedClass = isNight
+    ? "border-[#d9e2cf]/55 bg-[#d9e2cf] text-[#202822]"
+    : "border-[#26351f] bg-[#dfe6d2] text-[#26351f]";
+
   return (
     <div
       onClick={onClose}
@@ -124,74 +101,53 @@ export default function EditProfileModal({
             <p className={`mb-2 text-sm font-semibold uppercase tracking-[0.25em] ${theme.accentText}`}>
               Perfil
             </p>
-
             <h2 className={`text-2xl font-bold ${theme.primaryText}`}>
               Editar perfil
             </h2>
           </div>
-
-          <button
-            onClick={onClose}
-            className={`rounded-full px-3 py-1 text-sm font-bold ${theme.mutedButton}`}
-          >
+          <button onClick={onClose} className={`rounded-full px-3 py-1 text-sm font-bold ${theme.mutedButton}`}>
             ✕
           </button>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className={`mb-2 block text-sm font-semibold ${theme.accentText}`}>
-              Nombre visible
-            </label>
-
+            <label className={`mb-2 block text-sm font-semibold ${theme.accentText}`}>Nombre visible</label>
             <input
               value={name}
-              onChange={(event) => setName(event.target.value)}
+              onChange={(e) => setName(e.target.value)}
               className={`w-full rounded-xl border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#9aa58f]/25 ${theme.input}`}
               placeholder="Pablo"
             />
           </div>
 
           <div>
-            <label className={`mb-2 block text-sm font-semibold ${theme.accentText}`}>
-              Usuario
-            </label>
-
+            <label className={`mb-2 block text-sm font-semibold ${theme.accentText}`}>Usuario</label>
             <input
               value={username}
-              onChange={(event) =>
-                setUsername(normalizeUsername(event.target.value))
-              }
+              onChange={(e) => setUsername(normalizeUsername(e.target.value))}
               className={`w-full rounded-xl border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#9aa58f]/25 ${theme.input}`}
               placeholder="pablorgalvan"
             />
-
             <p className={`mt-2 text-xs ${theme.mutedText}`}>
               Solo letras, números, punto y guion bajo. Debe ser único.
             </p>
           </div>
 
           <div>
-            <label className={`mb-2 block text-sm font-semibold ${theme.accentText}`}>
-              Bio
-            </label>
-
+            <label className={`mb-2 block text-sm font-semibold ${theme.accentText}`}>Bio</label>
             <textarea
               value={bio}
-              onChange={(event) => setBio(event.target.value)}
+              onChange={(e) => setBio(e.target.value)}
               maxLength={160}
               className={`h-28 w-full resize-none rounded-xl border px-4 py-3 text-sm leading-6 outline-none focus:ring-2 focus:ring-[#9aa58f]/25 ${theme.input}`}
               placeholder="Una breve frase sobre ti..."
             />
-
             <p className={`mt-2 text-xs ${theme.mutedText}`}>{bio.length}/160</p>
           </div>
 
           <div>
-            <label className={`mb-3 block text-sm font-semibold ${theme.accentText}`}>
-              Avatar
-            </label>
-
+            <label className={`mb-3 block text-sm font-semibold ${theme.accentText}`}>Avatar</label>
             <div className="grid grid-cols-4 gap-3">
               {faithAvatars.map((avatar) => (
                 <button
@@ -199,29 +155,18 @@ export default function EditProfileModal({
                   type="button"
                   onClick={() => setAvatarUrl(avatar.id)}
                   className={`flex flex-col items-center gap-2 rounded-2xl border p-3 text-xs font-semibold transition ${
-                    avatarUrl === avatar.id
-                      ? theme.mode === "night"
-                        ? "border-[#d9e2cf]/55 bg-[#d9e2cf] text-[#202822]"
-                        : "border-[#26351f] bg-[#dfe6d2] text-[#26351f]"
-                      : theme.mutedButton
+                    avatarUrl === avatar.id ? selectedClass : theme.mutedButton
                   }`}
                 >
-                  <FaithAvatar
-                    avatarId={avatar.id}
-                    fallbackName={avatar.label}
-                    size="md"
-                  />
-
+                  <FaithAvatar avatarId={avatar.id} fallbackName={avatar.label} size="md" />
                   {avatar.label}
                 </button>
               ))}
             </div>
           </div>
-          <div>
-            <label className={`mb-3 block text-sm font-semibold ${theme.accentText}`}>
-              Tema de la app
-            </label>
 
+          <div>
+            <label className={`mb-3 block text-sm font-semibold ${theme.accentText}`}>Tema de la app</label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
               {[
                 { id: "auto", label: "Auto" },
@@ -233,15 +178,9 @@ export default function EditProfileModal({
                 <button
                   key={option.id}
                   type="button"
-                  onClick={() =>
-                    onThemePreferenceChange(option.id as ThemePreference)
-                  }
+                  onClick={() => setPreference(option.id as ThemePreference)}
                   className={`rounded-2xl border px-3 py-3 text-xs font-semibold transition ${
-                    themePreference === option.id
-                      ? theme.mode === "night"
-                        ? "border-[#d9e2cf]/60 bg-[#d9e2cf] text-[#202822]"
-                        : "border-[#26351f] bg-[#dfe6d2] text-[#26351f]"
-                      : theme.mutedButton
+                    preference === option.id ? selectedClass : theme.mutedButton
                   }`}
                 >
                   {option.label}

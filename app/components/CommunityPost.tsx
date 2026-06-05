@@ -3,30 +3,16 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import type { CommunityPost, Gospel } from "../types";
-
 import CommentsPanel from "./CommentsPanel";
 import FaithAvatar from "./FaithAvatar";
 import GospelPreview from "./GospelPreview";
 import ProfileModal from "./ProfileModal";
-
-type Theme = {
-  mode?: string;
-  card: string;
-  innerCard: string;
-  mutedButton: string;
-  input: string;
-  accentText: string;
-  primaryText: string;
-  bodyText: string;
-  mutedText: string;
-  pill: string;
-  button: string;
-};
+import { useTheme } from "../context/ThemeContext";
+import { getThemeClasses } from "../utils/theme";
 
 type CommunityPostProps = {
   post: CommunityPost;
   gospels: Gospel[];
-  theme: Theme;
   currentUserId?: string;
   isOwnPost: boolean;
   onToggleLike: (post: CommunityPost) => void;
@@ -40,12 +26,15 @@ export default function CommunityPostCard({
   gospels,
   currentUserId,
   isOwnPost,
-  theme,
   onToggleLike,
   onSaveToDiary,
   onFollowChange,
   onCommentChange,
 }: CommunityPostProps) {
+  const { theme: dayPeriod } = useTheme();
+  const theme = getThemeClasses();
+  const isNight = dayPeriod === "night";
+
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [areCommentsOpen, setAreCommentsOpen] = useState(false);
   const [isGospelOpen, setIsGospelOpen] = useState(false);
@@ -53,19 +42,27 @@ export default function CommunityPostCard({
 
   function normalizeDate(date: string) {
     if (!date) return "";
-
     if (date.includes("-")) return date;
-
     const [day, month, year] = date.split("/");
-
     if (!day || !month || !year) return date;
-
     return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
   }
 
   const linkedGospel = gospels.find(
-    (gospel) => normalizeDate(gospel.date) === normalizeDate(post.gospelDate)
+    (g) => normalizeDate(g.date) === normalizeDate(post.gospelDate)
   );
+
+  const activeClass = isNight
+    ? "border-[#d9e2cf]/30 bg-[#d9e2cf] text-[#202822]"
+    : "border-emerald-200 bg-emerald-100 text-emerald-800";
+
+  const commentsActiveClass = isNight
+    ? "border-[#d9e2cf]/30 bg-[#d9e2cf] text-[#202822]"
+    : "border-[#26351f] bg-[#26351f] text-white";
+
+  const savedClass = isNight
+    ? "border-[#d9e2cf]/30 bg-[#d9e2cf] text-[#202822]"
+    : "border-emerald-200 bg-emerald-100 text-emerald-700";
 
   return (
     <>
@@ -75,24 +72,14 @@ export default function CommunityPostCard({
       >
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <FaithAvatar
-              avatarId={post.author.avatarUrl}
-              fallbackName={post.author.name}
-              size="sm"
-            />
-
+            <FaithAvatar avatarId={post.author.avatarUrl} fallbackName={post.author.name} size="sm" />
             <button
               type="button"
               onClick={() => setIsProfileOpen(true)}
               className="min-w-0 text-left transition hover:opacity-80"
             >
-              <p className={`truncate text-sm font-bold ${theme.primaryText}`}>
-                {post.author.name}
-              </p>
-
-              <p
-                className={`truncate text-[0.68rem] font-semibold uppercase tracking-[0.14em] ${theme.mutedText}`}
-              >
+              <p className={`truncate text-sm font-bold ${theme.primaryText}`}>{post.author.name}</p>
+              <p className={`truncate text-[0.68rem] font-semibold uppercase tracking-[0.14em] ${theme.mutedText}`}>
                 @{post.author.username} · {post.date}
               </p>
             </button>
@@ -104,11 +91,7 @@ export default function CommunityPostCard({
               onClick={() => onSaveToDiary(post)}
               disabled={post.isSavedByMe}
               className={`shrink-0 rounded-full border px-3 py-1 text-[0.7rem] font-semibold transition ${
-                post.isSavedByMe
-                  ? theme.mode === "night"
-                    ? "border-[#d9e2cf]/30 bg-[#d9e2cf] text-[#202822]"
-                    : "border-emerald-200 bg-emerald-100 text-emerald-700"
-                  : theme.mutedButton
+                post.isSavedByMe ? savedClass : theme.mutedButton
               }`}
             >
               {post.isSavedByMe ? "Guardada" : "Guardar"}
@@ -116,16 +99,14 @@ export default function CommunityPostCard({
           )}
         </div>
 
-        <p
-          className={`text-justify text-[0.97rem] leading-[1.9] sm:text-left ${theme.bodyText}`}
-        >
+        <p className={`text-justify text-[0.97rem] leading-[1.9] sm:text-left ${theme.bodyText}`}>
           {post.text}
         </p>
 
         <div className="mt-5 flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() => setIsGospelOpen((current) => !current)}
+            onClick={() => setIsGospelOpen((c) => !c)}
             className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${theme.pill}`}
           >
             {isGospelOpen ? "Ocultar Evangelio" : post.gospelReference}
@@ -134,7 +115,7 @@ export default function CommunityPostCard({
           {post.tags.length > 0 && (
             <button
               type="button"
-              onClick={() => setShowTags((current) => !current)}
+              onClick={() => setShowTags((c) => !c)}
               className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${theme.mutedButton}`}
             >
               {showTags ? "Ocultar etiquetas" : `Etiquetas · ${post.tags.length}`}
@@ -147,11 +128,7 @@ export default function CommunityPostCard({
                 type="button"
                 onClick={() => onToggleLike(post)}
                 className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-                  post.isLikedByMe
-                    ? theme.mode === "night"
-                      ? "border-[#d9e2cf]/30 bg-[#d9e2cf] text-[#202822]"
-                      : "border-emerald-200 bg-emerald-100 text-emerald-800"
-                    : theme.mutedButton
+                  post.isLikedByMe ? activeClass : theme.mutedButton
                 }`}
               >
                 {post.isLikedByMe ? "💚" : "♡"} {post.likes}
@@ -160,13 +137,9 @@ export default function CommunityPostCard({
 
             <button
               type="button"
-              onClick={() => setAreCommentsOpen((current) => !current)}
+              onClick={() => setAreCommentsOpen((c) => !c)}
               className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-                areCommentsOpen
-                  ? theme.mode === "night"
-                    ? "border-[#d9e2cf]/30 bg-[#d9e2cf] text-[#202822]"
-                    : "border-[#26351f] bg-[#26351f] text-white"
-                  : theme.mutedButton
+                areCommentsOpen ? commentsActiveClass : theme.mutedButton
               }`}
             >
               Comentarios · {post.comments}
@@ -185,10 +158,7 @@ export default function CommunityPostCard({
             >
               <div className="flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
-                  <span
-                    key={tag.id}
-                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${theme.pill}`}
-                  >
+                  <span key={tag.id} className={`rounded-full border px-3 py-1 text-xs font-semibold ${theme.pill}`}>
                     <span className="mr-1">{tag.emoji}</span>
                     {tag.label}
                   </span>
@@ -207,7 +177,7 @@ export default function CommunityPostCard({
               transition={{ duration: 0.22, ease: "easeOut" }}
               className="overflow-hidden"
             >
-              <GospelPreview gospel={linkedGospel} theme={theme} />
+              <GospelPreview gospel={linkedGospel} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -222,7 +192,6 @@ export default function CommunityPostCard({
               className="overflow-hidden"
             >
               <CommentsPanel
-                theme={theme}
                 reflectionId={post.id}
                 postAuthorId={post.author.id}
                 currentUserId={currentUserId}
@@ -238,7 +207,6 @@ export default function CommunityPostCard({
           user={post.author}
           currentUserId={currentUserId}
           onFollowChange={onFollowChange}
-          theme={theme}
           onClose={() => setIsProfileOpen(false)}
         />
       )}

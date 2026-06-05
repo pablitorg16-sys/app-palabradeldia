@@ -1,61 +1,46 @@
-import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata } from "next";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { ThemeProvider } from "./context/ThemeContext";
 
 export const metadata: Metadata = {
   title: "PalabradelDía",
-  description:
-    "Comunidad católica para reflexionar y compartir el Evangelio diario.",
-  manifest: "/manifest.json",
-  icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
-  },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "PalabradelDía",
-  },
+  description: "Comunidad católica para reflexionar y compartir el Evangelio diario.",
 };
 
-export const viewport: Viewport = {
-  themeColor: "#4f6740",
-};
+const themeScript = `
+  (function() {
+    try {
+      var pref = localStorage.getItem('palabradeldia_theme_preference');
+      var validPrefs = ['sunrise', 'day', 'sunset', 'night'];
+      
+      if (pref && validPrefs.includes(pref)) {
+        document.documentElement.setAttribute('data-theme', pref);
+        return;
+      }
+      
+      // Si es "auto" o no hay preferencia, calcular por hora
+      var hour = new Date().getHours();
+      var theme = 'day';
+      if (hour >= 6  && hour < 9)  theme = 'sunrise';
+      if (hour >= 18 && hour < 21) theme = 'sunset';
+      if (hour >= 21 || hour < 6)  theme = 'night';
+      
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch(e) {}
+  })();
+`;
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-[#f7f5ef]">
-        {children}
-
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js');
-                });
-              }
-            `,
-          }}
-        />
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <link rel="manifest" href="/manifest.json" />
+      </head>
+      <body>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
