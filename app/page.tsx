@@ -196,6 +196,7 @@ export default function Home() {
                   onSaveToDiary={handleSaveCommunityPostToDiary}
                   onFollowChange={refreshCommunityPosts}
                   onCommentChange={refreshCommunityPosts}
+                  onGoToGospel={() => setActiveTab("evangelio")}
                 />
               )
             ) : (
