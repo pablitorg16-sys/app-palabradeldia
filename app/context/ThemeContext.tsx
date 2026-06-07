@@ -24,6 +24,18 @@ function resolveTheme(preference: ThemePreference): DayPeriod {
   return getCurrentDayPeriod();
 }
 
+// Lee la preferencia inicial ANTES de que React monte
+// para evitar que el useEffect sobreescriba el script del <head>
+function getInitialPreference(): ThemePreference {
+  if (typeof window === "undefined") return "auto";
+  try {
+    const saved = localStorage.getItem("palabradeldia_theme_preference");
+    const valid = ["auto", "sunrise", "day", "sunset", "night"];
+    if (saved && valid.includes(saved)) return saved as ThemePreference;
+  } catch {}
+  return "auto";
+}
+
 type ThemeContextValue = {
   preference: ThemePreference;
   theme: DayPeriod;
@@ -33,41 +45,39 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [preference, setPreferenceState] = useState<ThemePreference>("auto");
+  // Inicializar con el valor correcto desde el principio
+  const [preference, setPreferenceState] = useState<ThemePreference>(getInitialPreference);
 
-  // Leer preferencia guardada
+  // Sincronizar data-theme solo cuando cambia la preferencia por acción del usuario
+  // NO en el mount inicial — el script del <head> ya lo hizo
+  const [isMounted, setIsMounted] = useState(false);
+
   useEffect(() => {
-    const saved = localStorage.getItem(
-      "palabradeldia_theme_preference"
-    ) as ThemePreference | null;
-
-    const valid = ["auto", "sunrise", "day", "sunset", "night"];
-    if (saved && valid.includes(saved)) {
-      setPreferenceState(saved);
-    }
+    setIsMounted(true);
   }, []);
 
-  // Actualizar data-theme en <html> cuando cambie la preferencia
   useEffect(() => {
+    // Solo actuar después del mount y cuando cambia la preferencia
+    if (!isMounted) return;
     const theme = resolveTheme(preference);
     document.documentElement.setAttribute("data-theme", theme);
-  }, [preference]);
+  }, [preference, isMounted]);
 
   // Actualizar automáticamente cada minuto si está en modo auto
   useEffect(() => {
     if (preference !== "auto") return;
-
     const interval = setInterval(() => {
       const theme = getCurrentDayPeriod();
       document.documentElement.setAttribute("data-theme", theme);
     }, 60_000);
-
     return () => clearInterval(interval);
   }, [preference]);
 
   function setPreference(pref: ThemePreference) {
     localStorage.setItem("palabradeldia_theme_preference", pref);
     setPreferenceState(pref);
+    // Aplicar inmediatamente sin esperar al useEffect
+    document.documentElement.setAttribute("data-theme", resolveTheme(pref));
   }
 
   const theme = resolveTheme(preference);
