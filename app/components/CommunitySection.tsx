@@ -155,6 +155,7 @@ export default function CommunitySection({
               post={post}
               gospels={availableGospels}
               currentUserId={currentUser.id}
+              currentUsername={currentUser.username}
               isOwnPost={post.author.id === currentUser.id}
               onToggleLike={onToggleLike}
               onSaveToDiary={onSaveToDiary}

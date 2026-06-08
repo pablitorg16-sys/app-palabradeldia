@@ -7,6 +7,7 @@ import CommentsPanel from "./CommentsPanel";
 import FaithAvatar from "./FaithAvatar";
 import GospelPreview from "./GospelPreview";
 import ProfileModal from "./ProfileModal";
+import ShareReflectionModal from "./ShareReflectionModal";
 import { useTheme } from "../context/ThemeContext";
 import { getThemeClasses } from "../utils/theme";
 
@@ -14,6 +15,7 @@ type CommunityPostProps = {
   post: CommunityPost;
   gospels: Gospel[];
   currentUserId?: string;
+  currentUsername?: string;
   isOwnPost: boolean;
   onToggleLike: (post: CommunityPost) => void;
   onSaveToDiary: (post: CommunityPost) => void;
@@ -25,6 +27,7 @@ export default function CommunityPostCard({
   post,
   gospels,
   currentUserId,
+  currentUsername,
   isOwnPost,
   onToggleLike,
   onSaveToDiary,
@@ -39,6 +42,7 @@ export default function CommunityPostCard({
   const [areCommentsOpen, setAreCommentsOpen] = useState(false);
   const [isGospelOpen, setIsGospelOpen] = useState(false);
   const [showTags, setShowTags] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   function normalizeDate(date: string) {
     if (!date) return "";
@@ -121,6 +125,14 @@ export default function CommunityPostCard({
               {showTags ? "Ocultar etiquetas" : `Etiquetas · ${post.tags.length}`}
             </button>
           )}
+
+          <button
+            type="button"
+            onClick={() => setIsShareOpen(true)}
+            className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${theme.mutedButton}`}
+          >
+            Compartir imagen
+          </button>
 
           <div className="ml-auto flex items-center gap-2">
             {!isOwnPost && (
@@ -208,6 +220,16 @@ export default function CommunityPostCard({
           currentUserId={currentUserId}
           onFollowChange={onFollowChange}
           onClose={() => setIsProfileOpen(false)}
+        />
+      )}
+
+      {isShareOpen && (
+        <ShareReflectionModal
+          text={post.text}
+          gospelReference={post.gospelReference}
+          gospelDate={post.gospelDate}
+          authorUsername={currentUsername ?? post.author.username}
+          onClose={() => setIsShareOpen(false)}
         />
       )}
     </>

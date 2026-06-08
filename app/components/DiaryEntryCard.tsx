@@ -3,12 +3,14 @@
 import { useState } from "react";
 import type { DiaryEntry, Gospel } from "../types";
 import GospelPreview from "./GospelPreview";
+import ShareReflectionModal from "./ShareReflectionModal";
 import { getThemeClasses } from "../utils/theme";
 
 type DiaryEntryCardProps = {
   entry: DiaryEntry;
   gospel?: Gospel;
   isGospelOpen: boolean;
+  authorUsername: string;
   onDelete: (id: string) => void;
   onToggleShared: (id: string) => void;
   onToggleFavorite: (id: string) => void;
@@ -19,6 +21,7 @@ export default function DiaryEntryCard({
   entry,
   gospel,
   isGospelOpen,
+  authorUsername,
   onDelete,
   onToggleShared,
   onToggleFavorite,
@@ -27,6 +30,7 @@ export default function DiaryEntryCard({
   const theme = getThemeClasses();
   const [showTags, setShowTags] = useState(false);
   const [showActions, setShowActions] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   const entryId = entry.id;
   const hasTags = entry.tags.length > 0;
@@ -55,111 +59,130 @@ export default function DiaryEntryCard({
   }
 
   return (
-    <article
-      id={`reflection-${entry.id}`}
-      className={`rounded-[2rem] border p-5 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-[1px] ${theme.innerCard}`}
-    >
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <div>
-          <p className={`text-sm font-bold ${theme.accentText}`}>{entry.date} · {entry.time}</p>
-          <p className={`mt-1 text-xs font-medium uppercase tracking-[0.14em] ${theme.mutedText}`}>{sourceText}</p>
-        </div>
-        <button
-          onClick={() => setShowActions(!showActions)}
-          className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${theme.mutedButton}`}
-        >
-          ···
-        </button>
-      </div>
-
-      <p className={`text-[1rem] leading-7 ${theme.bodyText}`}>{entry.text}</p>
-
-      <div className="mt-5 flex flex-wrap items-center gap-2">
-        <button
-          onClick={() => onToggleGospel(entryId)}
-          className={`rounded-full border px-3 py-1 text-sm font-semibold transition ${theme.pill}`}
-        >
-          {isGospelOpen ? "Ocultar Evangelio" : entry.gospelReference}
-        </button>
-
-        {hasTags && (
+    <>
+      <article
+        id={`reflection-${entry.id}`}
+        className={`rounded-[2rem] border p-5 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-[1px] ${theme.innerCard}`}
+      >
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div>
+            <p className={`text-sm font-bold ${theme.accentText}`}>{entry.date} · {entry.time}</p>
+            <p className={`mt-1 text-xs font-medium uppercase tracking-[0.14em] ${theme.mutedText}`}>{sourceText}</p>
+          </div>
           <button
-            onClick={() => setShowTags(!showTags)}
-            className={`rounded-full border px-3 py-1 text-sm font-semibold transition ${theme.mutedButton}`}
+            onClick={() => setShowActions(!showActions)}
+            className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${theme.mutedButton}`}
           >
-            {showTags ? "Ocultar etiquetas" : `Etiquetas · ${entry.tags.length}`}
+            ···
           </button>
-        )}
-
-        {entry.favorite && (
-          <span className="rounded-full border border-amber-200 bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-800">
-            ★ Favorita
-          </span>
-        )}
-
-        {entry.source === "own" && entry.shared && (
-          <span className="rounded-full border border-emerald-200 bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800">
-            Compartida
-          </span>
-        )}
-
-        {entry.source === "own" && entry.shared && (
-          <span className={`rounded-full border px-3 py-1 text-sm font-semibold ${theme.pill}`}>
-            ♥ {entry.likes ?? 0} me gusta
-          </span>
-        )}
-      </div>
-
-      {showTags && hasTags && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {entry.tags.map((tag) => (
-            <span key={tag.id} className={`rounded-full border px-3 py-1 text-sm font-semibold ${theme.pill}`}>
-              <span className="mr-1">{tag.emoji}</span>
-              {tag.label}
-            </span>
-          ))}
         </div>
-      )}
 
-      {showActions && (
-        <div className={`mt-4 flex flex-wrap gap-2 rounded-2xl border p-3 ${theme.innerCard}`}>
+        <p className={`text-[1rem] leading-7 ${theme.bodyText}`}>{entry.text}</p>
+
+        <div className="mt-5 flex flex-wrap items-center gap-2">
           <button
-            onClick={() => onToggleFavorite(entryId)}
-            className={`rounded-full border px-3 py-1 text-sm font-semibold transition ${
-              entry.favorite ? "border-amber-200 bg-amber-100 text-amber-800" : theme.mutedButton
-            }`}
+            onClick={() => onToggleGospel(entryId)}
+            className={`rounded-full border px-3 py-1 text-sm font-semibold transition ${theme.pill}`}
           >
-            {entry.favorite ? "Quitar favorita" : "Marcar favorita"}
+            {isGospelOpen ? "Ocultar Evangelio" : entry.gospelReference}
           </button>
 
-          {entry.source === "own" && (
+          {hasTags && (
             <button
-              onClick={() => onToggleShared(entryId)}
-              className={`rounded-full border px-3 py-1 text-sm font-semibold transition ${
-                entry.shared ? "border-emerald-200 bg-emerald-100 text-emerald-800" : theme.mutedButton
-              }`}
+              onClick={() => setShowTags(!showTags)}
+              className={`rounded-full border px-3 py-1 text-sm font-semibold transition ${theme.mutedButton}`}
             >
-              {entry.shared ? "Hacer privada" : "Compartir con la comunidad"}
+              {showTags ? "Ocultar etiquetas" : `Etiquetas · ${entry.tags.length}`}
             </button>
           )}
 
-          <button
-            onClick={exportReflectionToPdf}
-            className={`rounded-full border px-3 py-1 text-sm font-semibold transition ${theme.pill}`}
-          >
-            Exportar PDF
-          </button>
+          {entry.favorite && (
+            <span className="rounded-full border border-amber-200 bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-800">
+              ★ Favorita
+            </span>
+          )}
 
-          <button
-            onClick={() => onDelete(entryId)}
-            className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-sm font-semibold text-red-700 transition hover:bg-red-100"
-          >
-            Eliminar
-          </button>
+          {entry.source === "own" && entry.shared && (
+            <span className="rounded-full border border-emerald-200 bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800">
+              Compartida
+            </span>
+          )}
+
+          {entry.source === "own" && entry.shared && (
+            <span className={`rounded-full border px-3 py-1 text-sm font-semibold ${theme.pill}`}>
+              ♥ {entry.likes ?? 0} me gusta
+            </span>
+          )}
         </div>
-      )}
 
-      {isGospelOpen && <GospelPreview gospel={gospel} />}
-    </article>
+        {showTags && hasTags && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {entry.tags.map((tag) => (
+              <span key={tag.id} className={`rounded-full border px-3 py-1 text-sm font-semibold ${theme.pill}`}>
+                <span className="mr-1">{tag.emoji}</span>
+                {tag.label}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {showActions && (
+          <div className={`mt-4 flex flex-wrap gap-2 rounded-2xl border p-3 ${theme.innerCard}`}>
+            <button
+              onClick={() => onToggleFavorite(entryId)}
+              className={`rounded-full border px-3 py-1 text-sm font-semibold transition ${
+                entry.favorite ? "border-amber-200 bg-amber-100 text-amber-800" : theme.mutedButton
+              }`}
+            >
+              {entry.favorite ? "Quitar favorita" : "Marcar favorita"}
+            </button>
+
+            {entry.source === "own" && (
+              <button
+                onClick={() => onToggleShared(entryId)}
+                className={`rounded-full border px-3 py-1 text-sm font-semibold transition ${
+                  entry.shared ? "border-emerald-200 bg-emerald-100 text-emerald-800" : theme.mutedButton
+                }`}
+              >
+                {entry.shared ? "Hacer privada" : "Compartir con la comunidad"}
+              </button>
+            )}
+
+            <button
+              onClick={() => setIsShareOpen(true)}
+              className={`rounded-full border px-3 py-1 text-sm font-semibold transition ${theme.mutedButton}`}
+            >
+              Compartir imagen
+            </button>
+
+            <button
+              onClick={exportReflectionToPdf}
+              className={`rounded-full border px-3 py-1 text-sm font-semibold transition ${theme.pill}`}
+            >
+              Exportar PDF
+            </button>
+
+            <button
+              onClick={() => onDelete(entryId)}
+              className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+            >
+              Eliminar
+            </button>
+          </div>
+        )}
+
+        {isGospelOpen && <GospelPreview gospel={gospel} />}
+      </article>
+
+      {isShareOpen && (
+        <ShareReflectionModal
+          text={entry.text}
+          gospelReference={entry.gospelReference}
+          gospelDate={entry.gospelDate}
+          authorUsername={authorUsername}
+          onClose={() => setIsShareOpen(false)}
+        />
+      )}
+    </>
   );
 }

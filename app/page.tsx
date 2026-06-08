@@ -176,6 +176,7 @@ export default function Home() {
               <DiarySection
                 diaryEntries={diaryEntries}
                 gospels={allGospels}
+                authorUsername={currentUser?.username ?? "usuario"}
                 onDelete={deleteEntry}
                 onToggleShared={toggleShared}
                 onToggleFavorite={toggleFavorite}

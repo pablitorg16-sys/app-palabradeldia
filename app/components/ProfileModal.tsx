@@ -91,6 +91,8 @@ export default function ProfileModal({ user, currentUserId, onFollowChange, onCl
     setIsFollowLoading(false);
   }
 
+  const sharedCount = posts.length;
+
   return (
     <div
       onClick={onClose}
@@ -100,13 +102,16 @@ export default function ProfileModal({ user, currentUserId, onFollowChange, onCl
         onClick={(e) => e.stopPropagation()}
         className={`max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-3xl border p-5 shadow-2xl sm:p-6 ${theme.card}`}
       >
+        {/* Cabecera */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 gap-4">
             <FaithAvatar avatarId={user.avatarUrl} fallbackName={user.name} size="lg" />
             <div className="min-w-0">
               <h2 className={`truncate text-2xl font-bold ${theme.primaryText}`}>{user.name}</h2>
               <p className={`mt-1 text-sm font-semibold ${theme.accentText}`}>@{user.username}</p>
-              {user.bio && <p className={`mt-4 max-w-xl leading-7 ${theme.bodyText}`}>{user.bio}</p>}
+              {user.bio && (
+                <p className={`mt-3 max-w-xl text-sm leading-7 ${theme.bodyText}`}>{user.bio}</p>
+              )}
               {currentUserId && !isOwnProfile && (
                 <button
                   type="button"
@@ -130,15 +135,26 @@ export default function ProfileModal({ user, currentUserId, onFollowChange, onCl
           </button>
         </div>
 
-        <div className="mb-5 grid grid-cols-2 gap-3">
-          <button type="button" onClick={() => setOpenFollowList((c) => c === "followers" ? null : "followers")} className="text-left">
+        {/* Stats — 3 columnas */}
+        <div className="mb-5 grid grid-cols-3 gap-3">
+          <button
+            type="button"
+            onClick={() => setOpenFollowList((c) => c === "followers" ? null : "followers")}
+            className="text-left"
+          >
             <ProfileStat label="Seguidores" value={followersCount} />
           </button>
-          <button type="button" onClick={() => setOpenFollowList((c) => c === "following" ? null : "following")} className="text-left">
+          <button
+            type="button"
+            onClick={() => setOpenFollowList((c) => c === "following" ? null : "following")}
+            className="text-left"
+          >
             <ProfileStat label="Siguiendo" value={followingCount} />
           </button>
+          <ProfileStat label="Reflexiones" value={sharedCount} />
         </div>
 
+        {/* Lista de seguidores/siguiendo */}
         {openFollowList && (
           <div className={`mb-5 rounded-2xl border p-4 ${theme.innerCard}`}>
             <p className={`mb-3 text-sm font-bold ${theme.primaryText}`}>
@@ -162,6 +178,10 @@ export default function ProfileModal({ user, currentUserId, onFollowChange, onCl
           </div>
         )}
 
+        {/* Separador */}
+        <div className={`mb-5 h-px ${theme.divider}`} />
+
+        {/* Reflexiones */}
         <div className="space-y-4">
           {isLoading ? (
             <div className={`rounded-2xl p-5 text-sm font-semibold ${theme.innerCard} ${theme.primaryText}`}>

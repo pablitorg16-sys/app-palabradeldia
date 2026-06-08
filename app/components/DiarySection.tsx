@@ -15,6 +15,7 @@ import { BookOpen, Notebook, Pencil, Heart } from "lucide-react";
 type DiarySectionProps = {
   diaryEntries: DiaryEntry[];
   gospels: Gospel[];
+  authorUsername: string;
   onDelete: (entryId: DiaryEntry["id"]) => void;
   onToggleShared: (entryId: DiaryEntry["id"]) => void;
   onToggleFavorite: (entryId: DiaryEntry["id"]) => void;
@@ -27,6 +28,7 @@ type DiarySectionProps = {
 export default function DiarySection({
   diaryEntries,
   gospels,
+  authorUsername,
   onDelete,
   onToggleShared,
   onToggleFavorite,
@@ -218,6 +220,7 @@ export default function DiarySection({
                   entry={entry}
                   gospel={getGospelForEntry(entry)}
                   isGospelOpen={openGospelEntryId === entry.id}
+                  authorUsername={authorUsername}
                   onDelete={onDelete}
                   onToggleShared={onToggleShared}
                   onToggleFavorite={onToggleFavorite}
