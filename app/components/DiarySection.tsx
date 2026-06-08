@@ -1,6 +1,5 @@
 // v2
 "use client";
-"use client";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
@@ -54,10 +53,10 @@ export default function DiarySection({
 
   const visibleEntries = useMemo(() => {
     return diaryEntries.filter((entry) => {
-      const matchesDate    = selectedDate === "all" || entry.date === selectedDate;
-      const matchesTag     = selectedTagId === null || entry.tags.some((t) => String(t.id) === selectedTagId);
-      const matchesFav     = !showOnlyFavorites || entry.favorite;
-      const matchesSource  = sourceFilter === "all" || entry.source === sourceFilter;
+      const matchesDate   = selectedDate === "all" || entry.date === selectedDate;
+      const matchesTag    = selectedTagId === null || entry.tags.some((t) => String(t.id) === selectedTagId);
+      const matchesFav    = !showOnlyFavorites || entry.favorite;
+      const matchesSource = sourceFilter === "all" || entry.source === sourceFilter;
       return matchesDate && matchesTag && matchesFav && matchesSource;
     });
   }, [diaryEntries, selectedDate, selectedTagId, showOnlyFavorites, sourceFilter]);
@@ -136,61 +135,61 @@ export default function DiarySection({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.28, ease: "easeOut" }}
-          className={`rounded-[2rem] border p-7 text-center shadow-sm ${theme.card}`}
+          className={`rounded-[2rem] border p-7 shadow-sm ${theme.card}`}
         >
           {isDiaryCompletelyEmpty ? (
-  <div className={`rounded-[2rem] border p-7 shadow-sm ${theme.card}`}>
-    <div className={`mb-5 flex h-16 w-16 items-center justify-center rounded-[1.25rem] border ${theme.innerCard}`}>
-      <Notebook size={28} className={theme.accentText} />
-    </div>
+            <>
+              <div className={`mb-5 flex h-16 w-16 items-center justify-center rounded-[1.25rem] border ${theme.innerCard}`}>
+                <Notebook size={28} className={theme.accentText} />
+              </div>
 
-    <p className={`text-xs font-semibold uppercase tracking-[0.22em] ${theme.accentText}`}>
-      Tu diario empieza aquí
-    </p>
+              <p className={`text-xs font-semibold uppercase tracking-[0.22em] ${theme.accentText}`}>
+                Tu diario empieza aquí
+              </p>
 
-    <h3 className={`mt-2 text-xl font-bold ${theme.primaryText}`}>
-      Escribe tu primera reflexión
-    </h3>
+              <h3 className={`mt-2 text-xl font-bold ${theme.primaryText}`}>
+                Escribe tu primera reflexión
+              </h3>
 
-    <p className={`mt-3 text-sm leading-7 ${theme.bodyText}`}>
-      Lee el Evangelio de hoy, detente un momento y escribe lo que te inspira. No hace falta que sea largo — una sola frase ya cuenta.
-    </p>
+              <p className={`mt-3 text-sm leading-7 ${theme.bodyText}`}>
+                Lee el Evangelio de hoy, detente un momento y escribe lo que te inspira. No hace falta que sea largo — una sola frase ya cuenta.
+              </p>
 
-    {onGoToGospel && (
-      <button
-        type="button"
-        onClick={onGoToGospel}
-        className={`mt-6 w-full rounded-2xl px-5 py-3 text-sm font-bold shadow-sm transition ${theme.button}`}
-      >
-        Leer el Evangelio de hoy
-      </button>
-    )}
+              {onGoToGospel && (
+                <button
+                  type="button"
+                  onClick={onGoToGospel}
+                  className={`mt-6 w-full rounded-2xl px-5 py-3 text-sm font-bold shadow-sm transition ${theme.button}`}
+                >
+                  Leer el Evangelio de hoy
+                </button>
+              )}
 
-    <div className="mt-6 flex items-center gap-3">
-      <div className={`h-px flex-1 ${theme.divider}`} />
-      <p className={`text-xs ${theme.mutedText}`}>cómo funciona</p>
-      <div className={`h-px flex-1 ${theme.divider}`} />
-    </div>
+              <div className="mt-6 flex items-center gap-3">
+                <div className={`h-px flex-1 ${theme.divider}`} />
+                <p className={`text-xs ${theme.mutedText}`}>cómo funciona</p>
+                <div className={`h-px flex-1 ${theme.divider}`} />
+              </div>
 
-    <div className="mt-5 space-y-4">
-      {[
-  { icon: <BookOpen size={14} />, label: "Lee el Evangelio", desc: "Cada día hay una lectura esperándote." },
-  { icon: <Pencil size={14} />, label: "Escribe lo que sientes", desc: "Tu reflexión es personal. Compártela o guárdala solo para ti." },
-  { icon: <Heart size={14} />, label: "Construye un hábito", desc: "Tu diario crece contigo. Cada reflexión es un paso en tu camino." },
-].map((item) => (
-  <div key={item.label} className="flex items-start gap-3">
-    <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${theme.innerCard}`}>
-      <span className={theme.accentText}>{item.icon}</span>
-    </div>
-    <div>
-      <p className={`text-sm font-semibold ${theme.primaryText}`}>{item.label}</p>
-      <p className={`mt-0.5 text-xs leading-5 ${theme.mutedText}`}>{item.desc}</p>
-    </div>
-  </div>
-))}
-    </div>
-  </div>
-) : (
+              <div className="mt-5 space-y-4">
+                {[
+                  { icon: <BookOpen size={14} />, label: "Lee el Evangelio", desc: "Cada día hay una lectura esperándote." },
+                  { icon: <Pencil size={14} />, label: "Escribe lo que sientes", desc: "Tu reflexión es personal. Compártela o guárdala solo para ti." },
+                  { icon: <Heart size={14} />, label: "Construye un hábito", desc: "Tu diario crece contigo. Cada reflexión es un paso en tu camino." },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-start gap-3">
+                    <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${theme.innerCard}`}>
+                      <span className={theme.accentText}>{item.icon}</span>
+                    </div>
+                    <div>
+                      <p className={`text-sm font-semibold ${theme.primaryText}`}>{item.label}</p>
+                      <p className={`mt-0.5 text-xs leading-5 ${theme.mutedText}`}>{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
             <>
               <p className={`text-xs font-semibold uppercase tracking-[0.28em] ${theme.accentText}`}>
                 Sin resultados
