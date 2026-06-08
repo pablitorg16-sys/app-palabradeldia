@@ -16,7 +16,15 @@ type ShareReflectionModalProps = {
 
 const MAX_CHARS = 280;
 
-const shareThemes: { id: ShareTheme; label: string; bg: string; card: string; text: string; muted: string; accent: string }[] = [
+const shareThemes: {
+  id: ShareTheme;
+  label: string;
+  bg: string;
+  card: string;
+  text: string;
+  muted: string;
+  accent: string;
+}[] = [
   { id: "day",     label: "Día",       bg: "#e7eadf", card: "#f8faf2", text: "#26351f", muted: "#78716c", accent: "#4f6740" },
   { id: "night",   label: "Noche",     bg: "#202822", card: "#2d372f", text: "#f4f1e8", muted: "#b9c2b0", accent: "#c8d2bf" },
   { id: "sunrise", label: "Amanecer",  bg: "#efe5d6", card: "#fff7ed", text: "#3f2f22", muted: "#78716c", accent: "#8a5a32" },
@@ -51,12 +59,8 @@ export default function ShareReflectionModal({
   const needsTrimming = text.length > MAX_CHARS;
   const [start, setStart] = useState(0);
 
-  const selectedText = needsTrimming
-    ? text.slice(start, start + MAX_CHARS)
-    : text;
-
+  const selectedText = needsTrimming ? text.slice(start, start + MAX_CHARS) : text;
   const maxStart = Math.max(0, text.length - MAX_CHARS);
-
   const currentShareTheme = shareThemes.find((t) => t.id === selectedTheme) ?? shareThemes[0];
   const formattedDate = formatGospelDate(gospelDate);
 
@@ -64,15 +68,21 @@ export default function ShareReflectionModal({
     drawCanvas();
   }, [selectedTheme, selectedText]);
 
-  function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
+  function wrapText(
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    maxWidth: number,
+    lineHeight: number
+  ): number {
     const words = text.split(" ");
     let line = "";
     let currentY = y;
 
     for (const word of words) {
       const testLine = line + word + " ";
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && line !== "") {
+      if (ctx.measureText(testLine).width > maxWidth && line !== "") {
         ctx.fillText(line.trim(), x, currentY);
         line = word + " ";
         currentY += lineHeight;
@@ -84,75 +94,10 @@ export default function ShareReflectionModal({
     return currentY;
   }
 
-  function drawCanvas() {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const W = 1080;
-    const H = 1080;
-    canvas.width = W;
-    canvas.height = H;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const t = currentShareTheme;
-    const pad = 80;
-
-    // Fondo
-    ctx.fillStyle = t.bg;
-    ctx.fillRect(0, 0, W, H);
-
-    // Tarjeta interior
-    ctx.fillStyle = t.card;
-    roundRect(ctx, pad, pad, W - pad * 2, H - pad * 2, 48);
-    ctx.fill();
-
-    // Header — PalabradelDía
-    ctx.fillStyle = t.accent;
-    ctx.font = "600 32px system-ui, -apple-system, sans-serif";
-    ctx.letterSpacing = "6px";
-    ctx.fillText("PALABRADELDIA", pad + 60, pad + 80);
-
-    // Username
-    ctx.fillStyle = t.muted;
-    ctx.font = "400 28px system-ui, -apple-system, sans-serif";
-    ctx.letterSpacing = "0px";
-    ctx.fillText(`@${authorUsername}`, pad + 60, pad + 124);
-
-    // Línea divisora
-    ctx.strokeStyle = t.accent + "33";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(pad + 60, pad + 150);
-    ctx.lineTo(W - pad - 60, pad + 150);
-    ctx.stroke();
-
-    // Fecha del Evangelio
-    ctx.fillStyle = t.accent;
-    ctx.font = "600 26px system-ui, -apple-system, sans-serif";
-    ctx.fillText(`Reflexión del Evangelio del ${formattedDate}`, pad + 60, pad + 210);
-
-    // Referencia
-    ctx.fillStyle = t.muted;
-    ctx.font = "400 24px system-ui, -apple-system, sans-serif";
-    ctx.fillText(gospelReference, pad + 60, pad + 250);
-
-    // Línea divisora 2
-    ctx.strokeStyle = t.accent + "22";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(pad + 60, pad + 280);
-    ctx.lineTo(W - pad - 60, pad + 280);
-    ctx.stroke();
-
-    // Texto de la reflexión
-    ctx.fillStyle = t.text;
-    ctx.font = "400 36px Georgia, serif";
-    wrapText(ctx, `"${selectedText}"`, pad + 60, pad + 350, W - pad * 2 - 120, 56);
-  }
-
-  function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  function roundRect(
+    ctx: CanvasRenderingContext2D,
+    x: number, y: number, w: number, h: number, r: number
+  ) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
     ctx.lineTo(x + w - r, y);
@@ -166,6 +111,77 @@ export default function ShareReflectionModal({
     ctx.closePath();
   }
 
+  function drawCanvas() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    // 9:16 para Stories
+    const W = 1080;
+    const H = 1920;
+    canvas.width = W;
+    canvas.height = H;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const t = currentShareTheme;
+    const pad = 80;
+    const innerPad = 72;
+
+    // Fondo
+    ctx.fillStyle = t.bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Tarjeta interior
+    ctx.fillStyle = t.card;
+    roundRect(ctx, pad, pad, W - pad * 2, H - pad * 2, 64);
+    ctx.fill();
+
+    const cardX = pad + innerPad;
+    const cardW = W - pad * 2 - innerPad * 2;
+
+    // PalabradelDía
+    ctx.fillStyle = t.accent;
+    ctx.font = "700 52px system-ui, -apple-system, sans-serif";
+    ctx.fillText("PALABRADELDIA", cardX, pad + 140);
+
+    // Username
+    ctx.fillStyle = t.muted;
+    ctx.font = "400 40px system-ui, -apple-system, sans-serif";
+    ctx.fillText(`@${authorUsername}`, cardX, pad + 210);
+
+    // Línea divisora
+    ctx.strokeStyle = t.accent + "44";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cardX, pad + 250);
+    ctx.lineTo(W - pad - innerPad, pad + 250);
+    ctx.stroke();
+
+    // Fecha
+    ctx.fillStyle = t.accent;
+    ctx.font = "600 38px system-ui, -apple-system, sans-serif";
+    wrapText(ctx, `Reflexión del Evangelio del ${formattedDate}`, cardX, pad + 330, cardW, 56);
+
+    // Referencia
+    ctx.fillStyle = t.muted;
+    ctx.font = "400 34px system-ui, -apple-system, sans-serif";
+    ctx.fillText(gospelReference, cardX, pad + 410);
+
+    // Línea divisora 2
+    ctx.strokeStyle = t.accent + "22";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(cardX, pad + 455);
+    ctx.lineTo(W - pad - innerPad, pad + 455);
+    ctx.stroke();
+
+    // Texto reflexión
+    ctx.fillStyle = t.text;
+    ctx.font = "400 52px Georgia, serif";
+    wrapText(ctx, `"${selectedText}"`, cardX, pad + 570, cardW, 80);
+  }
+
   async function handleShare() {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -173,7 +189,7 @@ export default function ShareReflectionModal({
     setIsSharing(true);
     try {
       canvas.toBlob(async (blob) => {
-        if (!blob) return;
+        if (!blob) { setIsSharing(false); return; }
         const file = new File([blob], "reflexion-palabradeldia.png", { type: "image/png" });
 
         if (navigator.share && navigator.canShare({ files: [file] })) {
@@ -183,7 +199,6 @@ export default function ShareReflectionModal({
             text: `Reflexión del Evangelio del ${formattedDate}`,
           });
         } else {
-          // Fallback: descarga directa
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
@@ -205,18 +220,18 @@ export default function ShareReflectionModal({
     >
       <section
         onClick={(e) => e.stopPropagation()}
-        className={`max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border p-6 shadow-2xl ${appTheme.card}`}
+        className={`max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-3xl border p-6 shadow-2xl ${appTheme.card}`}
       >
         <div className="mb-5 flex items-center justify-between">
           <h2 className={`text-lg font-bold ${appTheme.primaryText}`}>Compartir reflexión</h2>
           <button onClick={onClose} className={`rounded-full px-3 py-1 text-sm font-bold ${appTheme.mutedButton}`}>✕</button>
         </div>
 
-        {/* Preview */}
+        {/* Preview — ratio 9:16 */}
         <canvas
           ref={canvasRef}
           className="mb-5 w-full rounded-2xl border"
-          style={{ aspectRatio: "1/1" }}
+          style={{ aspectRatio: "9/16" }}
         />
 
         {/* Selector de tema */}
@@ -238,7 +253,7 @@ export default function ShareReflectionModal({
           </div>
         </div>
 
-        {/* Selector de fragmento si supera el máximo */}
+        {/* Selector de fragmento */}
         {needsTrimming && (
           <div className="mb-5">
             <p className={`mb-2 text-xs font-semibold uppercase tracking-[0.2em] ${appTheme.accentText}`}>
@@ -252,11 +267,12 @@ export default function ShareReflectionModal({
               min={0}
               max={maxStart}
               value={start}
+              step={1}
               onChange={(e) => setStart(Number(e.target.value))}
               className="w-full"
             />
             <p className={`mt-2 text-xs ${appTheme.mutedText}`}>
-              "{selectedText.slice(0, 40)}..."
+              "{selectedText.slice(0, 50)}..."
             </p>
           </div>
         )}
