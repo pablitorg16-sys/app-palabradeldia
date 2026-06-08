@@ -1,8 +1,20 @@
-import { torresAmatGospels } from "../data/bible";
+async function loadBook(book: string) {
+  switch (book) {
+    case "Mateo":
+      return (await import("../data/bible/mateo")).mateo;
+    case "Marcos":
+      return (await import("../data/bible/marcos")).marcos;
+    case "Lucas":
+      return (await import("../data/bible/lucas")).lucas;
+    case "Juan":
+      return (await import("../data/bible/juan")).juan;
+    default:
+      return [];
+  }
+}
 
 function parseReference(reference: string) {
   const [bookPart, versesPart] = reference.trim().split(",");
-
   if (!bookPart || !versesPart) return null;
 
   const bookTokens = bookPart.trim().split(" ");
@@ -22,14 +34,14 @@ function parseReference(reference: string) {
   };
 }
 
-export function getPassageFromReference(reference: string) {
+export async function getPassageFromReference(reference: string) {
   const parsed = parseReference(reference);
-
   if (!parsed) return "";
 
-  const verses = torresAmatGospels.filter(
+  const verses = await loadBook(parsed.book);
+
+  const filtered = verses.filter(
     (verse) =>
-      verse.book === parsed.book &&
       verse.chapter === parsed.chapter &&
       verse.verse >= parsed.startVerse &&
       verse.verse <= parsed.endVerse
@@ -37,11 +49,11 @@ export function getPassageFromReference(reference: string) {
 
   const expectedCount = parsed.endVerse - parsed.startVerse + 1;
 
-  if (verses.length !== expectedCount) {
+  if (filtered.length !== expectedCount) {
     console.warn(
-      `Faltan versículos para ${reference}. Esperados: ${expectedCount}. Encontrados: ${verses.length}.`
+      `Faltan versículos para ${reference}. Esperados: ${expectedCount}. Encontrados: ${filtered.length}.`
     );
   }
 
-  return verses.map((verse) => verse.text.trim()).join(" ");
+  return filtered.map((verse) => verse.text.trim()).join(" ");
 }

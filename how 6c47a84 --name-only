@@ -1,0 +1,15 @@
+[33m73828d3[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mbeta-v1[m[33m, [m[1;31morigin/beta-v1[m[33m)[m fix: use prefers-color-scheme as theme fallback, remove inline script
+[33m49ef818[m fix: use next/script with beforeInteractive for theme init
+[33m8e36d1a[m fix: allow inline scripts via CSP header
+[33m5e5b857[m fix: add theme-init.js content
+[33m75549bd[m fix: move theme init script to public folder to bypass CSP in production
+[33m50d20d0[m fix: theme persistence and flash on reload
+[33m6c47a84[m feat: empty states redesign, lucide icons, community fixes
+[33mac8e3ee[m feat: CSS variables theme, fix N+1 queries, liturgical calendar 2026
+[33mc40b491[m chore: add .env.local to gitignore
+[33mf5c90c0[m fix associated gospel in diary
+[33m44e912c[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m fix theme transition remount
+[33m2bc457a[m fix auto theme
+[33m71c995b[m remove theme debug
+[33m7fe5b62[m fix theme polish
+[33m61bf24c[m beta-ready

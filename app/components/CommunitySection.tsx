@@ -21,6 +21,9 @@ type CommunitySectionProps = {
   onFollowChange: () => void;
   onCommentChange: () => void;
   onGoToGospel?: () => void;
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  onLoadMore: () => void;
 };
 
 export default function CommunitySection({
@@ -33,6 +36,9 @@ export default function CommunitySection({
   onFollowChange,
   onCommentChange,
   onGoToGospel,
+  hasMore,
+  isLoadingMore,
+  onLoadMore,
 }: CommunitySectionProps) {
   const { theme: dayPeriod } = useTheme();
   const theme = getThemeClasses();
@@ -90,74 +96,85 @@ export default function CommunitySection({
   if (isLoadingCommunity) return <CommunitySkeleton />;
 
   return (
-  <section data-tour="community-section" className="space-y-5">
-    <div>
-      <p className={`text-xs font-semibold uppercase tracking-[0.35em] ${theme.accentText}`}>
-        Comunidad
-      </p>
-      <p className={`mt-2 text-sm leading-6 ${theme.bodyText}`}>
-        Lee meditaciones compartidas por otros usuarios y guarda las que quieras llevar a tu diario.
-      </p>
-    </div>
+    <section data-tour="community-section" className="space-y-5">
+      <div>
+        <p className={`text-xs font-semibold uppercase tracking-[0.35em] ${theme.accentText}`}>
+          Comunidad
+        </p>
+        <p className={`mt-2 text-sm leading-6 ${theme.bodyText}`}>
+          Lee meditaciones compartidas por otros usuarios y guarda las que quieras llevar a tu diario.
+        </p>
+      </div>
 
-    <div className={`inline-flex rounded-full border p-1 shadow-sm ${theme.innerCard}`}>
-      {renderFeedButton("popular", "Populares")}
-      {renderFeedButton("following", "Siguiendo")}
-    </div>
+      <div className={`inline-flex rounded-full border p-1 shadow-sm ${theme.innerCard}`}>
+        {renderFeedButton("popular", "Populares")}
+        {renderFeedButton("following", "Siguiendo")}
+      </div>
 
-    {sortedPosts.length === 0 ? (
-      <div className={`rounded-[2rem] border p-7 shadow-sm ${theme.card}`}>
-        <div className={`mb-5 flex h-14 w-14 items-center justify-center rounded-[1.1rem] border ${theme.innerCard}`}>
-          {feedMode === "following" ? (
-            <UserPlus size={24} className={theme.accentText} />
-          ) : (
-            <Users size={24} className={theme.accentText} />
+      {sortedPosts.length === 0 ? (
+        <div className={`rounded-[2rem] border p-7 shadow-sm ${theme.card}`}>
+          <div className={`mb-5 flex h-14 w-14 items-center justify-center rounded-[1.1rem] border ${theme.innerCard}`}>
+            {feedMode === "following" ? (
+              <UserPlus size={24} className={theme.accentText} />
+            ) : (
+              <Users size={24} className={theme.accentText} />
+            )}
+          </div>
+
+          <p className={`text-xs font-semibold uppercase tracking-[0.22em] ${theme.accentText}`}>
+            {feedMode === "following" ? "Siguiendo" : "Populares"}
+          </p>
+
+          <h3 className={`mt-2 text-xl font-bold ${theme.primaryText}`}>
+            {feedMode === "following"
+              ? "Todavía no sigues a nadie"
+              : "Aún no hay reflexiones compartidas"}
+          </h3>
+
+          <p className={`mt-3 text-sm leading-7 ${theme.bodyText}`}>
+            {feedMode === "following"
+              ? "Explora las reflexiones populares y sigue a las personas cuya forma de ver el Evangelio te inspire."
+              : "Sé el primero. Cuando guardes una reflexión puedes compartirla con la comunidad con un solo tap."}
+          </p>
+
+          <button
+            type="button"
+            onClick={() => feedMode === "following" ? setFeedMode("popular") : onGoToGospel?.()}
+            className={`mt-6 w-full rounded-2xl border px-5 py-3 text-sm font-semibold transition ${theme.mutedButton}`}
+          >
+            {feedMode === "following"
+              ? "Explorar reflexiones populares"
+              : "Escribir mi primera reflexión"}
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {sortedPosts.map((post) => (
+            <CommunityPostCard
+              key={post.id}
+              post={post}
+              gospels={availableGospels}
+              currentUserId={currentUser.id}
+              isOwnPost={post.author.id === currentUser.id}
+              onToggleLike={onToggleLike}
+              onSaveToDiary={onSaveToDiary}
+              onFollowChange={onFollowChange}
+              onCommentChange={onCommentChange}
+            />
+          ))}
+
+          {hasMore && (
+            <button
+              type="button"
+              onClick={onLoadMore}
+              disabled={isLoadingMore}
+              className={`mx-auto mt-2 block rounded-full border px-5 py-3 text-sm font-semibold shadow-sm transition disabled:opacity-50 ${theme.mutedButton}`}
+            >
+              {isLoadingMore ? "Cargando..." : "Cargar más reflexiones"}
+            </button>
           )}
         </div>
-
-        <p className={`text-xs font-semibold uppercase tracking-[0.22em] ${theme.accentText}`}>
-          {feedMode === "following" ? "Siguiendo" : "Populares"}
-        </p>
-
-        <h3 className={`mt-2 text-xl font-bold ${theme.primaryText}`}>
-          {feedMode === "following"
-            ? "Todavía no sigues a nadie"
-            : "Aún no hay reflexiones compartidas"}
-        </h3>
-
-        <p className={`mt-3 text-sm leading-7 ${theme.bodyText}`}>
-          {feedMode === "following"
-            ? "Explora las reflexiones populares y sigue a las personas cuya forma de ver el Evangelio te inspire."
-            : "Sé el primero. Cuando guardes una reflexión puedes compartirla con la comunidad con un solo tap."}
-        </p>
-
-        <button
-          type="button"
-          onClick={() => feedMode === "following" ? setFeedMode("popular") : onGoToGospel?.()}
-          className={`mt-6 w-full rounded-2xl border px-5 py-3 text-sm font-semibold transition ${theme.mutedButton}`}
-        >
-          {feedMode === "following"
-            ? "Explorar reflexiones populares"
-            : "Escribir mi primera reflexión"}
-        </button>
-      </div>
-    ) : (
-      <div className="space-y-5">
-        {sortedPosts.map((post) => (
-          <CommunityPostCard
-            key={post.id}
-            post={post}
-            gospels={availableGospels}
-            currentUserId={currentUser.id}
-            isOwnPost={post.author.id === currentUser.id}
-            onToggleLike={onToggleLike}
-            onSaveToDiary={onSaveToDiary}
-            onFollowChange={onFollowChange}
-            onCommentChange={onCommentChange}
-          />
-        ))}
-      </div>
-    )}
-  </section>
-);
+      )}
+    </section>
+  );
 }

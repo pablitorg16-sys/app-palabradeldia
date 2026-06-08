@@ -36,13 +36,12 @@ export function useDiaryActions({
     onAfterSave: () => void;
   }) {
     const cleanReflection = reflection.trim();
-
     if (!cleanReflection) return;
 
     const now = new Date();
 
     const localEntry: DiaryEntry = {
-      id: Date.now(),
+      id: crypto.randomUUID(),
       text: cleanReflection,
       date: getSpanishDate(now),
       time: getSpanishTime(now),
@@ -57,12 +56,10 @@ export function useDiaryActions({
 
     if (userId) {
       const { entry, error } = await insertReflection(localEntry, userId);
-
       if (error) {
         console.error("Error saving reflection to Supabase:", error.message);
         return;
       }
-
       if (entry) {
         setDiaryEntries([entry, ...diaryEntries]);
       }
@@ -87,7 +84,7 @@ export function useDiaryActions({
     const now = new Date();
 
     const localEntry: DiaryEntry = {
-      id: Date.now(),
+      id: crypto.randomUUID(),
       text: post.text,
       date: getSpanishDate(now),
       time: getSpanishTime(now),
@@ -103,12 +100,10 @@ export function useDiaryActions({
 
     if (userId) {
       const { entry, error } = await insertReflection(localEntry, userId);
-
       if (error) {
         console.error("Error saving community post to Supabase:", error.message);
         return;
       }
-
       if (entry) {
         setDiaryEntries([entry, ...diaryEntries]);
       }
@@ -117,24 +112,21 @@ export function useDiaryActions({
     }
   }
 
-  async function deleteEntry(id: string | number) {
+  async function deleteEntry(id: string) {
     setDiaryEntries(diaryEntries.filter((entry) => entry.id !== id));
-
     if (userId) {
       const { error } = await deleteReflection(id, userId);
-
       if (error) {
         console.error("Error deleting reflection from Supabase:", error.message);
       }
     }
   }
 
-  async function toggleShared(id: string | number) {
+  async function toggleShared(id: string) {
     const entryToUpdate = diaryEntries.find((entry) => entry.id === id);
     if (!entryToUpdate) return;
 
     const newSharedValue = !entryToUpdate.shared;
-
     setDiaryEntries(
       diaryEntries.map((entry) =>
         entry.id === id ? { ...entry, shared: newSharedValue } : entry
@@ -142,10 +134,7 @@ export function useDiaryActions({
     );
 
     if (userId) {
-      const { error } = await updateReflection(id, userId, {
-        shared: newSharedValue,
-      });
-
+      const { error } = await updateReflection(id, userId, { shared: newSharedValue });
       if (error) {
         console.error("Error updating shared status:", error.message);
         return;
@@ -154,12 +143,11 @@ export function useDiaryActions({
     }
   }
 
-  async function toggleFavorite(id: string | number) {
+  async function toggleFavorite(id: string) {
     const entryToUpdate = diaryEntries.find((entry) => entry.id === id);
     if (!entryToUpdate) return;
 
     const newFavoriteValue = !entryToUpdate.favorite;
-
     setDiaryEntries(
       diaryEntries.map((entry) =>
         entry.id === id ? { ...entry, favorite: newFavoriteValue } : entry
@@ -167,10 +155,7 @@ export function useDiaryActions({
     );
 
     if (userId) {
-      const { error } = await updateReflection(id, userId, {
-        favorite: newFavoriteValue,
-      });
-
+      const { error } = await updateReflection(id, userId, { favorite: newFavoriteValue });
       if (error) {
         console.error("Error updating favorite status:", error.message);
       }

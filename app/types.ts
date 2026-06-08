@@ -23,7 +23,7 @@ export type ReflectionTag = {
 export type DiaryEntrySource = "own" | "community";
 
 export type DiaryEntry = {
-  id: number | string;
+  id: string;
   text: string;
   date: string;
   time: string;
@@ -39,7 +39,7 @@ export type DiaryEntry = {
 };
 
 export type CommunityPost = {
-  id: number | string;
+  id: string;
   author: User;
   text: string;
   date: string;
@@ -52,7 +52,7 @@ export type CommunityPost = {
   isLikedByMe: boolean;
   isSavedByMe: boolean;
   tags: ReflectionTag[];
-  sourceDiaryEntryId: number | string;
+  sourceDiaryEntryId: string;
 };
 
 export type CommunityComment = {
@@ -65,5 +65,5 @@ export type CommunityComment = {
   createdAt: string;
 };
 
-export type Tab = "evangelio" | "diario" | "comunidad";;
+export type Tab = "evangelio" | "diario" | "comunidad";
 export type ThemePreference = "auto" | "sunrise" | "day" | "sunset" | "night";

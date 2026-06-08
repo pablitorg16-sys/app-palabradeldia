@@ -29,28 +29,32 @@ type CommentCountRow = {
 };
 
 export async function getGlobalCommunityPosts(
-  currentUserId?: string
-): Promise<CommunityPost[]> {
+  currentUserId?: string,
+  page = 0,
+  pageSize = 10
+): Promise<{ posts: CommunityPost[]; hasMore: boolean }> {
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
   const { data: reflections, error: reflectionsError } = await supabase
     .from("reflections")
     .select("id, user_id, text, gospel_date, gospel_reference, tags, created_at")
     .eq("shared", true)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(from, to + 1);
 
   if (reflectionsError || !reflections) {
     console.error("Error loading community reflections:", reflectionsError);
-    return [];
+    return { posts: [], hasMore: false };
   }
 
-  if (reflections.length === 0) return [];
+  const hasMore = reflections.length > pageSize;
+  const pageReflections = hasMore ? reflections.slice(0, pageSize) : reflections;
 
-  const reflectionIds = reflections.map(
-    (reflection: ReflectionRow) => reflection.id
-  );
+  if (pageReflections.length === 0) return { posts: [], hasMore: false };
 
-  const userIds = Array.from(
-    new Set(reflections.map((reflection: ReflectionRow) => reflection.user_id))
-  );
+  const reflectionIds = pageReflections.map((r: ReflectionRow) => r.id);
+  const userIds = Array.from(new Set(pageReflections.map((r: ReflectionRow) => r.user_id)));
 
   const { data: profiles } = await supabase
     .from("profiles")
@@ -72,31 +76,19 @@ export async function getGlobalCommunityPosts(
   const commentsCountMap = new Map<string, number>();
   const likedByMeSet = new Set<string>();
 
-  profiles?.forEach((profile: ProfileRow) => {
-    profilesMap.set(profile.id, profile);
-  });
+  profiles?.forEach((profile: ProfileRow) => profilesMap.set(profile.id, profile));
 
   likes?.forEach((like: LikeRow) => {
-    likesCountMap.set(
-      like.reflection_id,
-      (likesCountMap.get(like.reflection_id) ?? 0) + 1
-    );
-
-    if (currentUserId && like.user_id === currentUserId) {
-      likedByMeSet.add(like.reflection_id);
-    }
+    likesCountMap.set(like.reflection_id, (likesCountMap.get(like.reflection_id) ?? 0) + 1);
+    if (currentUserId && like.user_id === currentUserId) likedByMeSet.add(like.reflection_id);
   });
 
   comments?.forEach((comment: CommentCountRow) => {
-    commentsCountMap.set(
-      comment.reflection_id,
-      (commentsCountMap.get(comment.reflection_id) ?? 0) + 1
-    );
+    commentsCountMap.set(comment.reflection_id, (commentsCountMap.get(comment.reflection_id) ?? 0) + 1);
   });
 
-  return reflections.map((reflection: ReflectionRow) => {
+  const posts = pageReflections.map((reflection: ReflectionRow) => {
     const profile = profilesMap.get(reflection.user_id);
-
     const author: User = {
       id: reflection.user_id,
       name: profile?.name ?? "Usuario",
@@ -104,7 +96,6 @@ export async function getGlobalCommunityPosts(
       avatarUrl: profile?.avatar_url ?? undefined,
       bio: profile?.bio ?? undefined,
     };
-
     const createdAt = new Date(reflection.created_at);
 
     return {
@@ -112,10 +103,7 @@ export async function getGlobalCommunityPosts(
       author,
       text: reflection.text,
       date: createdAt.toLocaleDateString("es-ES"),
-      time: createdAt.toLocaleTimeString("es-ES", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      time: createdAt.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
       createdAt: reflection.created_at,
       gospelDate: reflection.gospel_date,
       gospelReference: reflection.gospel_reference,
@@ -127,6 +115,8 @@ export async function getGlobalCommunityPosts(
       sourceDiaryEntryId: reflection.id,
     };
   });
+
+  return { posts, hasMore };
 }
 
 export async function toggleReflectionLike({
@@ -134,7 +124,7 @@ export async function toggleReflectionLike({
   userId,
   isLikedByMe,
 }: {
-  reflectionId: string | number;
+  reflectionId: string;
   userId: string;
   isLikedByMe: boolean;
 }) {
@@ -144,7 +134,6 @@ export async function toggleReflectionLike({
       .delete()
       .eq("reflection_id", reflectionId)
       .eq("user_id", userId);
-
     return { error };
   }
 
@@ -152,6 +141,5 @@ export async function toggleReflectionLike({
     reflection_id: reflectionId,
     user_id: userId,
   });
-
   return { error };
 }

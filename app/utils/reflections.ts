@@ -2,7 +2,7 @@ import { supabase } from "../lib/supabaseClient";
 import type { DiaryEntry, DiaryEntrySource, ReflectionTag } from "../types";
 
 type ReflectionRow = {
-  id: string | number;
+  id: string;
   text: string;
   created_at: string;
   gospel_date: string;
@@ -102,7 +102,7 @@ export async function getUserReflections(userId: string) {
 
 
 export async function updateReflection(
-  id: string | number,
+  id: string,
   userId: string,
   updates: Partial<DiaryEntry>
 ) {

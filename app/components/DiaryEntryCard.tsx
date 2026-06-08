@@ -9,10 +9,10 @@ type DiaryEntryCardProps = {
   entry: DiaryEntry;
   gospel?: Gospel;
   isGospelOpen: boolean;
-  onDelete: (id: number | string) => void;
-  onToggleShared: (id: number | string) => void;
-  onToggleFavorite: (id: number | string) => void;
-  onToggleGospel: (id: number | string) => void;
+  onDelete: (id: string) => void;
+  onToggleShared: (id: string) => void;
+  onToggleFavorite: (id: string) => void;
+  onToggleGospel: (id: string) => void;
 };
 
 export default function DiaryEntryCard({

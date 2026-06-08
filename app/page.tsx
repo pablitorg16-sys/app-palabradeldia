@@ -36,7 +36,7 @@ export default function Home() {
   const { todayGospel, isLoadingGospel } = useTodayGospel();
   const theme = getThemeClasses();
 
-  const [openGospelEntryId, setOpenGospelEntryId] = useState<number | string | null>(null);
+  const [openGospelEntryId, setOpenGospelEntryId] = useState<string | null>(null);
 
   const { user: authUser, isAuthenticated, signOut } = useAuth();
   const { currentUser, refreshProfile } = useUserProfile(authUser);
@@ -47,8 +47,15 @@ export default function Home() {
 
   const { diaryEntries, setDiaryEntries, syncMessage } = useDiaryEntries(authUser?.id);
 
-  const { communityPosts, followingIds, isLoadingCommunity, refreshCommunityPosts } =
-    useCommunityPosts(isAuthenticated, authUser?.id);
+  const {
+    communityPosts,
+    followingIds,
+    isLoadingCommunity,
+    isLoadingMore,
+    hasMore,
+    loadMorePosts,
+    refreshCommunityPosts,
+  } = useCommunityPosts(isAuthenticated, authUser?.id);
 
   const { reflection, setReflection, shareReflection, setShareReflection,
     selectedTags, setSelectedTags, resetReflectionForm } = useReflectionForm();
@@ -71,7 +78,7 @@ export default function Home() {
     });
   }
 
-  function toggleGospel(id: number | string) {
+  function toggleGospel(id: string) {
     setOpenGospelEntryId((current) => (current === id ? null : id));
   }
 
@@ -197,6 +204,9 @@ export default function Home() {
                   onFollowChange={refreshCommunityPosts}
                   onCommentChange={refreshCommunityPosts}
                   onGoToGospel={() => setActiveTab("evangelio")}
+                  hasMore={hasMore}
+                  isLoadingMore={isLoadingMore}
+                  onLoadMore={loadMorePosts}
                 />
               )
             ) : (
