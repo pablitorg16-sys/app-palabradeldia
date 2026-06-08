@@ -113,7 +113,7 @@ export default function DiarySection({
     <section data-tour="diary-section" className="space-y-6">
       <div>
         <p className={`text-xs font-bold uppercase tracking-[0.5em] ${theme.accentText}`}>
-          DIARIO v3 TEST 
+          Diario de reflexiones
         </p>
         <p className={`mt-2 text-sm leading-6 ${theme.bodyText}`}>
           Revisa tus meditaciones personales y las que has guardado de la comunidad.
