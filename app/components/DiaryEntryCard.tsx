@@ -11,6 +11,7 @@ type DiaryEntryCardProps = {
   gospel?: Gospel;
   isGospelOpen: boolean;
   authorUsername: string;
+  sharerUsername: string;
   onDelete: (id: string) => void;
   onToggleShared: (id: string) => void;
   onToggleFavorite: (id: string) => void;
@@ -22,6 +23,7 @@ export default function DiaryEntryCard({
   gospel,
   isGospelOpen,
   authorUsername,
+  sharerUsername,
   onDelete,
   onToggleShared,
   onToggleFavorite,
@@ -180,6 +182,7 @@ export default function DiaryEntryCard({
           gospelReference={entry.gospelReference}
           gospelDate={entry.gospelDate}
           authorUsername={authorUsername}
+          sharerUsername={sharerUsername}
           onClose={() => setIsShareOpen(false)}
         />
       )}

@@ -16,6 +16,7 @@ type DiarySectionProps = {
   diaryEntries: DiaryEntry[];
   gospels: Gospel[];
   authorUsername: string;
+  sharerUsername: string;
   onDelete: (entryId: DiaryEntry["id"]) => void;
   onToggleShared: (entryId: DiaryEntry["id"]) => void;
   onToggleFavorite: (entryId: DiaryEntry["id"]) => void;
@@ -29,6 +30,7 @@ export default function DiarySection({
   diaryEntries,
   gospels,
   authorUsername,
+  sharerUsername,
   onDelete,
   onToggleShared,
   onToggleFavorite,
@@ -220,7 +222,8 @@ export default function DiarySection({
                   entry={entry}
                   gospel={getGospelForEntry(entry)}
                   isGospelOpen={openGospelEntryId === entry.id}
-                  authorUsername={authorUsername}
+                  authorUsername={entry.source === "community" ? (entry.originalAuthor ?? authorUsername) : authorUsername}
+                  sharerUsername={sharerUsername}
                   onDelete={onDelete}
                   onToggleShared={onToggleShared}
                   onToggleFavorite={onToggleFavorite}

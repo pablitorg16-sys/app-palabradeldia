@@ -1,35 +1,33 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { getThemeClasses } from "../utils/theme";
 import { useTheme } from "../context/ThemeContext";
 
 type ShareTheme = "day" | "night" | "sunrise" | "sunset";
+type TextMode = "full" | "shrink" | "fragment";
 
 type ShareReflectionModalProps = {
   text: string;
   gospelReference: string;
   gospelDate: string;
   authorUsername: string;
+  sharerUsername: string;
   onClose: () => void;
 };
 
-const MAX_CHARS = 280;
+const LOGO_B64 = "PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSIxMTIiIGZpbGw9IndoaXRlIi8+CiAgPHBhdGggZD0iTTI1NiAzNjVDMjIzIDMyMiAxNzQgMzA2IDEwNSAzMjZWMTcxQzE2NyAxNTMgMjE4IDE2NyAyNTYgMjExVjM2NVoiIHN0cm9rZT0iIzRmNjc0MCIgc3Ryb2tlLXdpZHRoPSIyMiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0yNTYgMzY1QzI4OSAzMjIgMzM4IDMwNiA0MDcgMzI2VjE3MUMzNDUgMTUzIDI5NCAxNjcgMjU2IDIxMVYzNjVaIiBzdHJva2U9IiM0ZjY3NDAiIHN0cm9rZS13aWR0aD0iMjIiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNMjU2IDIxMVYzNzYiIHN0cm9rZT0iIzRmNjc0MCIgc3Ryb2tlLXdpZHRoPSIxMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTTI1NiAxMThWMjEwIiBzdHJva2U9IiM0ZjY3NDAiIHN0cm9rZS13aWR0aD0iMjAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0yMjEgMTU5SDI5MSIgc3Ryb2tlPSIjNGY2NzQwIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMTUxIDEyM0wxNzkgMTU0IiBzdHJva2U9IiM0ZjY3NDAiIHN0cm9rZS13aWR0aD0iMTMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0zNjEgMTIzTDMzMyAxNTQiIHN0cm9rZT0iIzRmNjc0MCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTTI1NiA3OFY5OCIgc3Ryb2tlPSIjNGY2NzQwIiBzdHJva2Utd2lkdGg9IjEzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMTkxIDk1TDIwNyAxMjYiIHN0cm9rZT0iIzRmNjc0MCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTTMyMSA5NUwzMDUgMTI2IiBzdHJva2U9IiM0ZjY3NDAiIHN0cm9rZS13aWR0aD0iMTMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4=";
 
 const shareThemes: {
-  id: ShareTheme;
-  label: string;
-  bg: string;
-  card: string;
-  text: string;
-  muted: string;
-  accent: string;
+  id: ShareTheme; label: string; bg: string; text: string; muted: string; accent: string; line: string;
 }[] = [
-  { id: "day",     label: "Día",       bg: "#e7eadf", card: "#f8faf2", text: "#26351f", muted: "#78716c", accent: "#4f6740" },
-  { id: "night",   label: "Noche",     bg: "#202822", card: "#2d372f", text: "#f4f1e8", muted: "#b9c2b0", accent: "#c8d2bf" },
-  { id: "sunrise", label: "Amanecer",  bg: "#efe5d6", card: "#fff7ed", text: "#3f2f22", muted: "#78716c", accent: "#8a5a32" },
-  { id: "sunset",  label: "Atardecer", bg: "#e8ddd2", card: "#f7eadf", text: "#3b2a22", muted: "#78716c", accent: "#7a4f35" },
+  { id: "day",     label: "Día",       bg: "#e7eadf", text: "#26351f", muted: "#78716c", accent: "#4f6740", line: "rgba(79,103,64,0.2)" },
+  { id: "night",   label: "Noche",     bg: "#202822", text: "#f4f1e8", muted: "#7a8a72", accent: "#c8d2bf", line: "rgba(200,210,191,0.2)" },
+  { id: "sunrise", label: "Amanecer",  bg: "#efe5d6", text: "#3f2f22", muted: "#78716c", accent: "#8a5a32", line: "rgba(138,90,50,0.2)" },
+  { id: "sunset",  label: "Atardecer", bg: "#e8ddd2", text: "#3b2a22", muted: "#78716c", accent: "#7a4f35", line: "rgba(122,79,53,0.2)" },
 ];
+
+const FRAGMENT_MAX = 400;
 
 function formatGospelDate(dateStr: string): string {
   try {
@@ -37,9 +35,39 @@ function formatGospelDate(dateStr: string): string {
     const parts = dateStr.includes("-") ? dateStr.split("-") : dateStr.split("/").reverse();
     const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
     return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
-  } catch {
-    return dateStr;
+  } catch { return dateStr; }
+}
+
+function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number): number {
+  const words = text.split(" ");
+  let line = "";
+  let currentY = y;
+  for (const word of words) {
+    const testLine = line + word + " ";
+    if (ctx.measureText(testLine).width > maxWidth && line !== "") {
+      ctx.fillText(line.trim(), x, currentY);
+      line = word + " ";
+      currentY += lineHeight;
+    } else {
+      line = testLine;
+    }
   }
+  ctx.fillText(line.trim(), x, currentY);
+  return currentY;
+}
+
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
 
 export default function ShareReflectionModal({
@@ -47,75 +75,37 @@ export default function ShareReflectionModal({
   gospelReference,
   gospelDate,
   authorUsername,
+  sharerUsername,
   onClose,
 }: ShareReflectionModalProps) {
   const appTheme = getThemeClasses();
   const { theme: dayPeriod } = useTheme();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const logoRef = useRef<HTMLImageElement | null>(null);
+
   const [selectedTheme, setSelectedTheme] = useState<ShareTheme>(dayPeriod);
+  const [textMode, setTextMode] = useState<TextMode>("full");
+  const [fragmentStart, setFragmentStart] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
+  const [logoLoaded, setLogoLoaded] = useState(false);
 
-  const needsTrimming = text.length > MAX_CHARS;
-  const [start, setStart] = useState(0);
-
-  const selectedText = needsTrimming ? text.slice(start, start + MAX_CHARS) : text;
-  const maxStart = Math.max(0, text.length - MAX_CHARS);
-  const currentShareTheme = shareThemes.find((t) => t.id === selectedTheme) ?? shareThemes[0];
   const formattedDate = formatGospelDate(gospelDate);
+  const isOwnPost = authorUsername === sharerUsername;
+
+  const fragmentText = text.slice(fragmentStart, fragmentStart + FRAGMENT_MAX);
+  const maxStart = Math.max(0, text.length - FRAGMENT_MAX);
 
   useEffect(() => {
-    drawCanvas();
-  }, [selectedTheme, selectedText]);
+    const img = new Image();
+    img.onload = () => { logoRef.current = img; setLogoLoaded(true); };
+    img.src = `data:image/svg+xml;base64,${LOGO_B64}`;
+  }, []);
 
-  function wrapText(
-    ctx: CanvasRenderingContext2D,
-    text: string,
-    x: number,
-    y: number,
-    maxWidth: number,
-    lineHeight: number
-  ): number {
-    const words = text.split(" ");
-    let line = "";
-    let currentY = y;
-
-    for (const word of words) {
-      const testLine = line + word + " ";
-      if (ctx.measureText(testLine).width > maxWidth && line !== "") {
-        ctx.fillText(line.trim(), x, currentY);
-        line = word + " ";
-        currentY += lineHeight;
-      } else {
-        line = testLine;
-      }
-    }
-    ctx.fillText(line.trim(), x, currentY);
-    return currentY;
-  }
-
-  function roundRect(
-    ctx: CanvasRenderingContext2D,
-    x: number, y: number, w: number, h: number, r: number
-  ) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-  }
-
-  function drawCanvas() {
+  const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !logoLoaded) return;
 
-    // 9:16 para Stories
     const W = 1080;
     const H = 1920;
     canvas.width = W;
@@ -124,80 +114,100 @@ export default function ShareReflectionModal({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const t = currentShareTheme;
-    const pad = 80;
-    const innerPad = 72;
+    const t = shareThemes.find((s) => s.id === selectedTheme) ?? shareThemes[0];
+    const pad = 90;
+    const textX = pad;
+    const textW = W - pad * 2;
 
     // Fondo
     ctx.fillStyle = t.bg;
     ctx.fillRect(0, 0, W, H);
 
-    // Tarjeta interior
-    ctx.fillStyle = t.card;
-    roundRect(ctx, pad, pad, W - pad * 2, H - pad * 2, 64);
-    ctx.fill();
+    // ── HEADER ──
+    const headerY = pad + 80;
 
-    const cardX = pad + innerPad;
-    const cardW = W - pad * 2 - innerPad * 2;
+    // Logo
+    const logoSize = 72;
+    if (logoRef.current) {
+      ctx.save();
+      roundRect(ctx, textX, headerY - logoSize * 0.75, logoSize, logoSize, 16);
+      ctx.clip();
+      ctx.drawImage(logoRef.current, textX, headerY - logoSize * 0.75, logoSize, logoSize);
+      ctx.restore();
+    }
 
-    // PalabradelDía
+    // Nombre app
     ctx.fillStyle = t.accent;
-    ctx.font = "700 52px system-ui, -apple-system, sans-serif";
-    ctx.fillText("PALABRADELDIA", cardX, pad + 140);
+    ctx.font = "600 40px system-ui, -apple-system, sans-serif";
+    ctx.fillText("PALABRADELDIA", textX + logoSize + 20, headerY - 20);
 
-    // Username
-    ctx.fillStyle = t.muted;
-    ctx.font = "400 40px system-ui, -apple-system, sans-serif";
-    ctx.fillText(`@${authorUsername}`, cardX, pad + 210);
-
-    // Línea divisora
-    ctx.strokeStyle = t.accent + "44";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(cardX, pad + 250);
-    ctx.lineTo(W - pad - innerPad, pad + 250);
-    ctx.stroke();
-
-    // Fecha
-    ctx.fillStyle = t.accent;
-    ctx.font = "600 38px system-ui, -apple-system, sans-serif";
-    wrapText(ctx, `Reflexión del Evangelio del ${formattedDate}`, cardX, pad + 330, cardW, 56);
-
-    // Referencia
+    // Sharer username — derecha
     ctx.fillStyle = t.muted;
     ctx.font = "400 34px system-ui, -apple-system, sans-serif";
-    ctx.fillText(gospelReference, cardX, pad + 410);
+    ctx.textAlign = "right";
+    ctx.fillText(`@${sharerUsername}`, W - pad, headerY - 20);
+    ctx.textAlign = "left";
 
-    // Línea divisora 2
-    ctx.strokeStyle = t.accent + "22";
-    ctx.lineWidth = 1.5;
+    // Línea bajo header
+    ctx.strokeStyle = t.line;
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(cardX, pad + 455);
-    ctx.lineTo(W - pad - innerPad, pad + 455);
+    ctx.moveTo(textX, headerY + 30);
+    ctx.lineTo(W - pad, headerY + 30);
     ctx.stroke();
 
-    // Texto reflexión
+    // ── COMILLA DECORATIVA ──
+    ctx.fillStyle = t.accent + "18";
+    ctx.font = "700 320px Georgia, serif";
+    ctx.fillText("\u201C", textX - 20, headerY + 340);
+
+    // ── TEXTO ──
     ctx.fillStyle = t.text;
-    ctx.font = "400 52px Georgia, serif";
-    wrapText(ctx, `"${selectedText}"`, cardX, pad + 570, cardW, 80);
-  }
+    const textTopY = headerY + 200;
+
+    let fontSize = 58;
+    if (textMode === "shrink") fontSize = 44;
+
+    ctx.font = `400 ${fontSize}px Georgia, serif`;
+    const lineH = fontSize * 1.75;
+
+    const displayText = textMode === "fragment" ? `\u201C${fragmentText}\u201D` : `\u201C${text}\u201D`;
+    wrapText(ctx, displayText, textX, textTopY, textW, lineH);
+
+    // ── FOOTER ──
+    const footerY = H - pad - 80;
+
+    ctx.strokeStyle = t.line;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(textX, footerY - 40);
+    ctx.lineTo(W - pad, footerY - 40);
+    ctx.stroke();
+
+    ctx.fillStyle = t.accent;
+    ctx.font = "600 36px system-ui, -apple-system, sans-serif";
+    ctx.fillText(`${gospelReference}  ·  ${formattedDate}`, textX, footerY);
+
+    if (!isOwnPost) {
+      ctx.fillStyle = t.muted;
+      ctx.font = "400 30px system-ui, -apple-system, sans-serif";
+      ctx.fillText(`Escrita por @${authorUsername}`, textX, footerY + 48);
+    }
+
+  }, [selectedTheme, textMode, fragmentStart, logoLoaded, text, fragmentText, gospelReference, formattedDate, authorUsername, sharerUsername, isOwnPost]);
+
+  useEffect(() => { drawCanvas(); }, [drawCanvas]);
 
   async function handleShare() {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     setIsSharing(true);
     try {
       canvas.toBlob(async (blob) => {
         if (!blob) { setIsSharing(false); return; }
         const file = new File([blob], "reflexion-palabradeldia.png", { type: "image/png" });
-
         if (navigator.share && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: "PalabradelDía",
-            text: `Reflexión del Evangelio del ${formattedDate}`,
-          });
+          await navigator.share({ files: [file], title: "PalabradelDía", text: `Reflexión del Evangelio del ${formattedDate}` });
         } else {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
@@ -208,16 +218,11 @@ export default function ShareReflectionModal({
         }
         setIsSharing(false);
       }, "image/png");
-    } catch {
-      setIsSharing(false);
-    }
+    } catch { setIsSharing(false); }
   }
 
   return (
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
-    >
+    <div onClick={onClose} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
       <section
         onClick={(e) => e.stopPropagation()}
         className={`max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-3xl border p-6 shadow-2xl ${appTheme.card}`}
@@ -227,25 +232,63 @@ export default function ShareReflectionModal({
           <button onClick={onClose} className={`rounded-full px-3 py-1 text-sm font-bold ${appTheme.mutedButton}`}>✕</button>
         </div>
 
-        {/* Preview — ratio 9:16 */}
-        <canvas
-          ref={canvasRef}
-          className="mb-5 w-full rounded-2xl border"
-          style={{ aspectRatio: "9/16" }}
-        />
+        {/* Preview */}
+        <canvas ref={canvasRef} className="mb-5 w-full rounded-2xl border" style={{ aspectRatio: "9/16" }} />
+
+        {/* Modo de texto */}
+        <div className="mb-5">
+          <p className={`mb-3 text-xs font-semibold uppercase tracking-[0.2em] ${appTheme.accentText}`}>Texto</p>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { id: "full" as TextMode,     label: "Completo" },
+              { id: "shrink" as TextMode,   label: "Reducir" },
+              { id: "fragment" as TextMode, label: "Fragmento" },
+            ].map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setTextMode(m.id)}
+                className={`rounded-xl border px-2 py-2 text-xs font-semibold transition ${
+                  textMode === m.id ? appTheme.button : appTheme.mutedButton
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+
+          {textMode === "fragment" && (
+            <div className="mt-4">
+              <p className={`mb-2 text-xs ${appTheme.mutedText}`}>
+                Desliza para elegir el fragmento ({FRAGMENT_MAX} caracteres)
+              </p>
+              <input
+                type="range"
+                min={0}
+                max={maxStart}
+                value={fragmentStart}
+                step={1}
+                onChange={(e) => setFragmentStart(Number(e.target.value))}
+                className="w-full"
+              />
+              <p className={`mt-2 text-xs ${appTheme.mutedText}`}>
+                "{fragmentText.slice(0, 60)}..."
+              </p>
+            </div>
+          )}
+        </div>
 
         {/* Selector de tema */}
         <div className="mb-5">
           <p className={`mb-3 text-xs font-semibold uppercase tracking-[0.2em] ${appTheme.accentText}`}>Tema</p>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {shareThemes.map((t) => (
               <button
                 key={t.id}
                 type="button"
                 onClick={() => setSelectedTheme(t.id)}
-                className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
-                  selectedTheme === t.id ? appTheme.button : appTheme.mutedButton
-                }`}
+                style={{ background: t.bg, color: t.text, borderColor: selectedTheme === t.id ? t.accent : t.line }}
+                className={`rounded-xl border-2 px-3 py-2 text-xs font-semibold transition`}
               >
                 {t.label}
               </button>
@@ -253,31 +296,7 @@ export default function ShareReflectionModal({
           </div>
         </div>
 
-        {/* Selector de fragmento */}
-        {needsTrimming && (
-          <div className="mb-5">
-            <p className={`mb-2 text-xs font-semibold uppercase tracking-[0.2em] ${appTheme.accentText}`}>
-              Fragmento ({MAX_CHARS} caracteres máx.)
-            </p>
-            <p className={`mb-3 text-xs leading-5 ${appTheme.mutedText}`}>
-              Tu reflexión supera el máximo. Desliza para elegir qué parte compartir.
-            </p>
-            <input
-              type="range"
-              min={0}
-              max={maxStart}
-              value={start}
-              step={1}
-              onChange={(e) => setStart(Number(e.target.value))}
-              className="w-full"
-            />
-            <p className={`mt-2 text-xs ${appTheme.mutedText}`}>
-              "{selectedText.slice(0, 50)}..."
-            </p>
-          </div>
-        )}
-
-        {/* Botón compartir */}
+        {/* Compartir */}
         <button
           type="button"
           onClick={handleShare}

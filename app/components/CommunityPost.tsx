@@ -229,6 +229,7 @@ export default function CommunityPostCard({
           gospelReference={post.gospelReference}
           gospelDate={post.gospelDate}
           authorUsername={currentUsername ?? post.author.username}
+          sharerUsername={currentUsername ?? post.author.username}
           onClose={() => setIsShareOpen(false)}
         />
       )}
