@@ -162,37 +162,38 @@ export default function ShareReflectionModal({
     ctx.fillText("\u201C", textX - 20, headerY + 340);
 
     // ── TEXTO ──
-    ctx.fillStyle = t.text;
-    const textTopY = headerY + 200;
+ctx.fillStyle = t.text;
+const textTopY = headerY + 200;
 
-    let fontSize = 58;
-    if (textMode === "shrink") fontSize = 44;
+let fontSize = 58;
+if (textMode === "shrink") fontSize = 44;
 
-    ctx.font = `400 ${fontSize}px Georgia, serif`;
-    const lineH = fontSize * 1.75;
+ctx.font = `400 ${fontSize}px Georgia, serif`;
+const lineH = fontSize * 1.75;
 
-    const displayText = textMode === "fragment" ? `\u201C${fragmentText}\u201D` : `\u201C${text}\u201D`;
-    wrapText(ctx, displayText, textX, textTopY, textW, lineH);
+const displayText = textMode === "fragment" ? `\u201C${fragmentText}\u201D` : `\u201C${text}\u201D`;
+const lastTextY = wrapText(ctx, displayText, textX, textTopY, textW, lineH);
 
-    // ── FOOTER ──
-    const footerY = H - pad - 80;
+// ── FOOTER — dinámico, justo debajo del texto ──
+const footerGap = 80;
+const footerY = Math.min(lastTextY + footerGap + 40, H - pad - 40);
 
-    ctx.strokeStyle = t.line;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(textX, footerY - 40);
-    ctx.lineTo(W - pad, footerY - 40);
-    ctx.stroke();
+ctx.strokeStyle = t.line;
+ctx.lineWidth = 2;
+ctx.beginPath();
+ctx.moveTo(textX, footerY - 40);
+ctx.lineTo(W - pad, footerY - 40);
+ctx.stroke();
 
-    ctx.fillStyle = t.accent;
-    ctx.font = "600 36px system-ui, -apple-system, sans-serif";
-    ctx.fillText(`${gospelReference}  ·  ${formattedDate}`, textX, footerY);
+ctx.fillStyle = t.accent;
+ctx.font = "600 36px system-ui, -apple-system, sans-serif";
+ctx.fillText(`${gospelReference}  ·  ${formattedDate}`, textX, footerY);
 
-    if (!isOwnPost) {
-      ctx.fillStyle = t.muted;
-      ctx.font = "400 30px system-ui, -apple-system, sans-serif";
-      ctx.fillText(`Escrita por @${authorUsername}`, textX, footerY + 48);
-    }
+if (!isOwnPost) {
+  ctx.fillStyle = t.muted;
+  ctx.font = "400 30px system-ui, -apple-system, sans-serif";
+  ctx.fillText(`Escrita por @${authorUsername}`, textX, footerY + 48);
+}
 
   }, [selectedTheme, textMode, fragmentStart, logoLoaded, text, fragmentText, gospelReference, formattedDate, authorUsername, sharerUsername, isOwnPost]);
 
