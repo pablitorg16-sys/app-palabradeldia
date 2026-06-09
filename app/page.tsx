@@ -68,6 +68,7 @@ export default function Home() {
   const { saveMessage, showSaveMessage } = useSaveFeedback();
 
   function handleSaveReflection() {
+    if (!todayGospel) return;
     saveReflection({
       reflection, shareReflection, selectedTags,
       selectedGospel: todayGospel,
@@ -110,7 +111,7 @@ export default function Home() {
   }
 
   const allGospels = [
-    todayGospel,
+    ...(todayGospel ? [todayGospel] : []),
     ...gospels.filter((g) => g.date !== todayGospel?.date),
   ].filter(Boolean);
 
@@ -156,7 +157,7 @@ export default function Home() {
               shareReflection={shareReflection}
               selectedTags={selectedTags}
               isAuthenticated={isAuthenticated}
-              isLoading={!todayGospel}
+              isLoading={!todayGospel || isLoadingGospel}
               onReflectionChange={setReflection}
               onShareChange={setShareReflection}
               onTagsChange={setSelectedTags}

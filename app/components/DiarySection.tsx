@@ -222,7 +222,7 @@ export default function DiarySection({
                   entry={entry}
                   gospel={getGospelForEntry(entry)}
                   isGospelOpen={openGospelEntryId === entry.id}
-                  authorUsername={entry.source === "community" ? (entry.originalAuthor ?? authorUsername) : authorUsername}
+                  authorUsername={entry.source === "community" ? (entry.originalAuthorUsername ?? entry.originalAuthor ?? authorUsername) : authorUsername}
                   sharerUsername={sharerUsername}
                   onDelete={onDelete}
                   onToggleShared={onToggleShared}

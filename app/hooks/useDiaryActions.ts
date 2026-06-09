@@ -96,6 +96,7 @@ export function useDiaryActions({
       tags: post.tags,
       source: "community",
       originalAuthor: post.author.name,
+      originalAuthorUsername: post.author.username,
     };
 
     if (userId) {

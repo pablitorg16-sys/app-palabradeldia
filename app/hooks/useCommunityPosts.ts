@@ -92,6 +92,17 @@ export function useCommunityPosts(
     return () => { supabase.removeChannel(channel); };
   }, [isAuthenticated, currentUserId, refreshCommunityPosts]);
 
+  // Reconectar cuando el usuario vuelve a la app
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        void refreshCommunityPosts(false);
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [refreshCommunityPosts]);
+
   return {
     communityPosts,
     followingIds,

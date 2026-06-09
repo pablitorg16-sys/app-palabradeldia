@@ -36,6 +36,7 @@ export type DiaryEntry = {
   tags: ReflectionTag[];
   source: DiaryEntrySource;
   originalAuthor?: string;
+  originalAuthorUsername?: string;
 };
 
 export type CommunityPost = {

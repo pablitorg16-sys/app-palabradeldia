@@ -38,24 +38,6 @@ function formatGospelDate(dateStr: string): string {
   } catch { return dateStr; }
 }
 
-function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number): number {
-  const words = text.split(" ");
-  let line = "";
-  let currentY = y;
-  for (const word of words) {
-    const testLine = line + word + " ";
-    if (ctx.measureText(testLine).width > maxWidth && line !== "") {
-      ctx.fillText(line.trim(), x, currentY);
-      line = word + " ";
-      currentY += lineHeight;
-    } else {
-      line = testLine;
-    }
-  }
-  ctx.fillText(line.trim(), x, currentY);
-  return currentY;
-}
-
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -92,7 +74,6 @@ export default function ShareReflectionModal({
 
   const formattedDate = formatGospelDate(gospelDate);
   const isOwnPost = authorUsername === sharerUsername;
-
   const fragmentText = text.slice(fragmentStart, fragmentStart + FRAGMENT_MAX);
   const maxStart = Math.max(0, text.length - FRAGMENT_MAX);
 
@@ -125,9 +106,8 @@ export default function ShareReflectionModal({
 
     // ── HEADER ──
     const headerY = pad + 80;
-
-    // Logo
     const logoSize = 72;
+
     if (logoRef.current) {
       ctx.save();
       roundRect(ctx, textX, headerY - logoSize * 0.75, logoSize, logoSize, 16);
@@ -136,19 +116,16 @@ export default function ShareReflectionModal({
       ctx.restore();
     }
 
-    // Nombre app
     ctx.fillStyle = t.accent;
     ctx.font = "600 40px system-ui, -apple-system, sans-serif";
     ctx.fillText("PALABRADELDIA", textX + logoSize + 20, headerY - 20);
 
-    // Sharer username — derecha
     ctx.fillStyle = t.muted;
     ctx.font = "400 34px system-ui, -apple-system, sans-serif";
     ctx.textAlign = "right";
     ctx.fillText(`@${sharerUsername}`, W - pad, headerY - 20);
     ctx.textAlign = "left";
 
-    // Línea bajo header
     ctx.strokeStyle = t.line;
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -156,46 +133,77 @@ export default function ShareReflectionModal({
     ctx.lineTo(W - pad, headerY + 30);
     ctx.stroke();
 
+    // ── FOOTER — fijo siempre abajo ──
+    const footerY = H - pad - 60;
+    const footerLineY = footerY - 50;
+
+    ctx.strokeStyle = t.line;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(textX, footerLineY);
+    ctx.lineTo(W - pad, footerLineY);
+    ctx.stroke();
+
+    ctx.fillStyle = t.accent;
+    ctx.font = "600 36px system-ui, -apple-system, sans-serif";
+    ctx.fillText(`${gospelReference}  ·  ${formattedDate}`, textX, footerY - 10);
+
+    if (!isOwnPost) {
+      ctx.fillStyle = t.muted;
+      ctx.font = "400 30px system-ui, -apple-system, sans-serif";
+      ctx.fillText(`Escrita por @${authorUsername}`, textX, footerY + 36);
+    }
+
     // ── COMILLA DECORATIVA ──
     ctx.fillStyle = t.accent + "18";
     ctx.font = "700 320px Georgia, serif";
     ctx.fillText("\u201C", textX - 20, headerY + 340);
 
-    // ── TEXTO ──
-ctx.fillStyle = t.text;
-const textTopY = headerY + 200;
+    // ── TEXTO — limitado para no solapar el footer ──
+    ctx.fillStyle = t.text;
+    const textTopY = headerY + 200;
+    const textMaxY = footerLineY - 60;
+    const textMaxH = textMaxY - textTopY;
 
-let fontSize = 58;
-if (textMode === "shrink") fontSize = 44;
+    let fontSize = 58;
+    if (textMode === "shrink") fontSize = 44;
 
-ctx.font = `400 ${fontSize}px Georgia, serif`;
-const lineH = fontSize * 1.75;
+    ctx.font = `400 ${fontSize}px Georgia, serif`;
+    const lineH = fontSize * 1.75;
+    const maxLines = Math.floor(textMaxH / lineH);
 
-const displayText = textMode === "fragment" ? `\u201C${fragmentText}\u201D` : `\u201C${text}\u201D`;
-const lastTextY = wrapText(ctx, displayText, textX, textTopY, textW, lineH);
+    const displayText = textMode === "fragment"
+      ? `\u201C${fragmentText}\u201D`
+      : `\u201C${text}\u201D`;
 
-// ── FOOTER — dinámico, justo debajo del texto ──
-const footerGap = 80;
-const footerY = Math.min(lastTextY + footerGap + 40, H - pad - 40);
+    const words = displayText.split(" ");
+    let line = "";
+    let currentY = textTopY;
+    let lineCount = 0;
+    let drawn = false;
 
-ctx.strokeStyle = t.line;
-ctx.lineWidth = 2;
-ctx.beginPath();
-ctx.moveTo(textX, footerY - 40);
-ctx.lineTo(W - pad, footerY - 40);
-ctx.stroke();
+    for (const word of words) {
+      const testLine = line + word + " ";
+      if (ctx.measureText(testLine).width > textW && line !== "") {
+        if (lineCount >= maxLines - 1) {
+          ctx.fillText(line.trim().replace(/["\u201D]$/, "") + "\u2026\u201D", textX, currentY);
+          drawn = true;
+          break;
+        }
+        ctx.fillText(line.trim(), textX, currentY);
+        line = word + " ";
+        currentY += lineH;
+        lineCount++;
+      } else {
+        line = testLine;
+      }
+    }
+    if (!drawn && line.trim()) {
+      ctx.fillText(line.trim(), textX, currentY);
+    }
 
-ctx.fillStyle = t.accent;
-ctx.font = "600 36px system-ui, -apple-system, sans-serif";
-ctx.fillText(`${gospelReference}  ·  ${formattedDate}`, textX, footerY);
-
-if (!isOwnPost) {
-  ctx.fillStyle = t.muted;
-  ctx.font = "400 30px system-ui, -apple-system, sans-serif";
-  ctx.fillText(`Escrita por @${authorUsername}`, textX, footerY + 48);
-}
-
-  }, [selectedTheme, textMode, fragmentStart, logoLoaded, text, fragmentText, gospelReference, formattedDate, authorUsername, sharerUsername, isOwnPost]);
+  }, [selectedTheme, textMode, fragmentStart, logoLoaded, text, fragmentText,
+      gospelReference, formattedDate, authorUsername, sharerUsername, isOwnPost]);
 
   useEffect(() => { drawCanvas(); }, [drawCanvas]);
 
@@ -208,7 +216,11 @@ if (!isOwnPost) {
         if (!blob) { setIsSharing(false); return; }
         const file = new File([blob], "reflexion-palabradeldia.png", { type: "image/png" });
         if (navigator.share && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: "PalabradelDía", text: `Reflexión del Evangelio del ${formattedDate}` });
+          await navigator.share({
+            files: [file],
+            title: "PalabradelDía",
+            text: `Reflexión del Evangelio del ${formattedDate}`,
+          });
         } else {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
@@ -233,10 +245,8 @@ if (!isOwnPost) {
           <button onClick={onClose} className={`rounded-full px-3 py-1 text-sm font-bold ${appTheme.mutedButton}`}>✕</button>
         </div>
 
-        {/* Preview */}
         <canvas ref={canvasRef} className="mb-5 w-full rounded-2xl border" style={{ aspectRatio: "9/16" }} />
 
-        {/* Modo de texto */}
         <div className="mb-5">
           <p className={`mb-3 text-xs font-semibold uppercase tracking-[0.2em] ${appTheme.accentText}`}>Texto</p>
           <div className="grid grid-cols-3 gap-2">
@@ -279,7 +289,6 @@ if (!isOwnPost) {
           )}
         </div>
 
-        {/* Selector de tema */}
         <div className="mb-5">
           <p className={`mb-3 text-xs font-semibold uppercase tracking-[0.2em] ${appTheme.accentText}`}>Tema</p>
           <div className="grid grid-cols-2 gap-2">
@@ -289,7 +298,7 @@ if (!isOwnPost) {
                 type="button"
                 onClick={() => setSelectedTheme(t.id)}
                 style={{ background: t.bg, color: t.text, borderColor: selectedTheme === t.id ? t.accent : t.line }}
-                className={`rounded-xl border-2 px-3 py-2 text-xs font-semibold transition`}
+                className="rounded-xl border-2 px-3 py-2 text-xs font-semibold transition"
               >
                 {t.label}
               </button>
@@ -297,7 +306,6 @@ if (!isOwnPost) {
           </div>
         </div>
 
-        {/* Compartir */}
         <button
           type="button"
           onClick={handleShare}
