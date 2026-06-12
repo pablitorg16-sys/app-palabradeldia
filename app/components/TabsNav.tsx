@@ -21,7 +21,10 @@ export default function TabsNav({ activeTab, onTabChange }: TabsNavProps) {
         </div>
       </nav>
 
-      <nav className={`fixed bottom-2 left-4 right-4 z-[120] rounded-3xl border p-1.5 shadow-2xl backdrop-blur sm:hidden ${theme.softCard}`}>
+      <nav
+        className={`fixed bottom-2 left-4 right-4 z-[120] rounded-3xl border p-1.5 shadow-2xl backdrop-blur sm:hidden ${theme.softCard}`}
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.375rem)" }}
+      >
         <div className="grid grid-cols-3 gap-2">
           <TabButton label="Evangelio" icon="✦" active={activeTab === "evangelio"} onClick={() => onTabChange("evangelio")} />
           <TabButton label="Diario"    icon="✍️" active={activeTab === "diario"}    onClick={() => onTabChange("diario")} />

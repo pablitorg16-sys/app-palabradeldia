@@ -78,7 +78,13 @@
   --btn-text:    #26351f;
 }
 
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
 * {
+  -webkit-tap-highlight-color: transparent;
   transition: background-color 0.7s, border-color 0.4s, color 0.3s;
 }
 /* Fallback por hora del día usando media queries */
