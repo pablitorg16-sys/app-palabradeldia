@@ -80,5 +80,6 @@ export function useDiaryEntries(userId?: string) {
     setDiaryEntries,
     isLoadingDiary,
     syncMessage,
+    refreshDiary: loadEntries,
   };
 }

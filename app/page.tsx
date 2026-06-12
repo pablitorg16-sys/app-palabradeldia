@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import AuthModal from "./components/AuthModal";
 import AuthRequiredCard from "./components/AuthRequiredCard";
@@ -14,6 +14,7 @@ import GospelSection from "./components/GospelSection";
 import GuidedGuestTour from "./components/GuidedGuestTour";
 import Header from "./components/Header";
 import InstallAppButton from "./components/InstallAppButton";
+import PullToRefresh from "./components/PullToRefresh";
 import TabsNav from "./components/TabsNav";
 
 import { gospels } from "./data/gospels";
@@ -33,8 +34,14 @@ import type { CommunityPost, Tab } from "./types";
 import { getThemeClasses } from "./utils/theme";
 
 export default function Home() {
-  const { todayGospel, isLoadingGospel } = useTodayGospel();
+  const { todayGospel, isLoadingGospel, refreshGospel } = useTodayGospel();
   const theme = getThemeClasses();
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      void navigator.serviceWorker.register("/sw.js");
+    }
+  }, []);
 
   const [openGospelEntryId, setOpenGospelEntryId] = useState<string | null>(null);
 
@@ -45,7 +52,7 @@ export default function Home() {
   const [authMode, setAuthMode] = useState<"signup" | "login" | null>(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
-  const { diaryEntries, setDiaryEntries, syncMessage } = useDiaryEntries(authUser?.id);
+  const { diaryEntries, setDiaryEntries, syncMessage, refreshDiary } = useDiaryEntries(authUser?.id);
 
   const {
     communityPosts,
@@ -109,6 +116,12 @@ export default function Home() {
     showSaveMessage("Reflexión guardada en tu diario");
     refreshCommunityPosts();
   }
+
+  const handlePullRefresh = useCallback(async () => {
+    if (activeTab === "evangelio") return refreshGospel();
+    if (activeTab === "diario") return refreshDiary();
+    return refreshCommunityPosts();
+  }, [activeTab, refreshGospel, refreshDiary, refreshCommunityPosts]);
 
   const allGospels = [
     ...(todayGospel ? [todayGospel] : []),
@@ -245,6 +258,8 @@ export default function Home() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
+
+      <PullToRefresh onRefresh={handlePullRefresh} />
     </main>
   );
 }

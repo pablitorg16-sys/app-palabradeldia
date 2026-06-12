@@ -11,6 +11,16 @@ function getTodayDateKey() {
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000;
+const FETCH_TIMEOUT_MS = 6_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms)
+    ),
+  ]);
+}
 
 export function useTodayGospel() {
   const [todayGospel, setTodayGospel] = useState<Gospel>(getTodayGospel());
@@ -21,7 +31,10 @@ export function useTodayGospel() {
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        const gospelFromSupabase = await getLiturgicalDayByDate(getTodayDateKey());
+        const gospelFromSupabase = await withTimeout(
+          getLiturgicalDayByDate(getTodayDateKey()),
+          FETCH_TIMEOUT_MS
+        );
 
         if (gospelFromSupabase) {
           setTodayGospel(gospelFromSupabase);
@@ -60,5 +73,6 @@ export function useTodayGospel() {
   return {
     todayGospel,
     isLoadingGospel,
+    refreshGospel: loadTodayGospel,
   };
 }

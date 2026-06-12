@@ -2,6 +2,17 @@ import { supabase } from "../lib/supabaseClient";
 import type { Gospel } from "../types";
 import { getPassageFromReference } from "./bible";
 
+const BIBLE_IMPORT_TIMEOUT_MS = 4_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms)
+    ),
+  ]);
+}
+
 type LiturgicalDayRow = {
   date: string;
   celebration: string | null;
@@ -11,7 +22,15 @@ type LiturgicalDayRow = {
 };
 
 async function mapLiturgicalDayToGospel(row: LiturgicalDayRow): Promise<Gospel> {
-  const text = await getPassageFromReference(row.gospel_reference);
+  let text = "";
+  try {
+    text = await withTimeout(
+      getPassageFromReference(row.gospel_reference),
+      BIBLE_IMPORT_TIMEOUT_MS
+    );
+  } catch {
+    // Dynamic import timed out or failed — fall through to row.gospel_text
+  }
 
   return {
     date: row.date,

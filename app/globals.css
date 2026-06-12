@@ -87,6 +87,13 @@ body {
   -webkit-tap-highlight-color: transparent;
   transition: background-color 0.7s, border-color 0.4s, color 0.3s;
 }
+
+/* Desactiva el zoom táctil cuando la app está instalada como PWA */
+@media (display-mode: standalone) {
+  html {
+    touch-action: pan-x pan-y;
+  }
+}
 /* Fallback por hora del día usando media queries */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
