@@ -1,5 +1,6 @@
 import { supabase } from "../lib/supabaseClient";
 import type { Gospel } from "../types";
+import { getPassageFromReference } from "./bible";
 
 type LiturgicalDayRow = {
   date: string;
@@ -9,12 +10,14 @@ type LiturgicalDayRow = {
   gospel_text: string;
 };
 
-function mapLiturgicalDayToGospel(row: LiturgicalDayRow): Gospel {
+async function mapLiturgicalDayToGospel(row: LiturgicalDayRow): Promise<Gospel> {
+  const text = await getPassageFromReference(row.gospel_reference);
+
   return {
     date: row.date,
     reference: row.gospel_reference,
     title: row.highlight_phrase,
-    text: row.gospel_text,
+    text: text || row.gospel_text,
   };
 }
 
@@ -52,5 +55,5 @@ export async function getLiturgicalDaysByDates(
     return [];
   }
 
-  return (data as LiturgicalDayRow[]).map(mapLiturgicalDayToGospel);
+  return Promise.all((data as LiturgicalDayRow[]).map(mapLiturgicalDayToGospel));
 }
