@@ -34,7 +34,7 @@ import type { CommunityPost, Tab } from "./types";
 import { getThemeClasses } from "./utils/theme";
 
 export default function Home() {
-  const { todayGospel, isLoadingGospel, refreshGospel } = useTodayGospel();
+  const { todayGospel, isLoadingGospel } = useTodayGospel();
   const theme = getThemeClasses();
 
   useEffect(() => {
@@ -118,10 +118,9 @@ export default function Home() {
   }
 
   const handlePullRefresh = useCallback(async () => {
-    if (activeTab === "evangelio") return refreshGospel();
     if (activeTab === "diario") return refreshDiary();
     return refreshCommunityPosts();
-  }, [activeTab, refreshGospel, refreshDiary, refreshCommunityPosts]);
+  }, [activeTab, refreshDiary, refreshCommunityPosts]);
 
   const allGospels = [
     ...(todayGospel ? [todayGospel] : []),
