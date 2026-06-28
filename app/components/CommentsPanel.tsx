@@ -74,10 +74,10 @@ export default function CommentsPanel({
     : "border-red-200 bg-red-50 text-red-700 hover:bg-red-100";
 
   return (
-    <div className={`mt-5 rounded-[1.7rem] border p-4 ${panelBg}`}>
+    <div className={`mt-5 rounded-[var(--radius-panel)] border p-4 ${panelBg}`}>
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <p className={`text-xs font-semibold uppercase tracking-[0.24em] ${theme.accentText}`}>
+          <p className={`text-xs font-semibold uppercase tracking-[0.1em] ${theme.accentText}`}>
             Conversación
           </p>
           <p className={`mt-1 text-xs ${theme.mutedText}`}>
@@ -87,11 +87,11 @@ export default function CommentsPanel({
       </div>
 
       {isLoading ? (
-        <div className={`rounded-2xl border p-4 text-sm ${bubbleText}`}>
+        <div className={`rounded-[var(--radius-panel)] border p-4 text-sm ${bubbleText}`}>
           Cargando comentarios...
         </div>
       ) : comments.length === 0 ? (
-        <div className={`rounded-2xl border p-4 ${bubbleBg}`}>
+        <div className={`rounded-[var(--radius-panel)] border p-4 ${bubbleBg}`}>
           <p className={`text-sm font-semibold ${theme.primaryText}`}>Todavía no hay comentarios</p>
           <p className={`mt-1 text-sm leading-6 ${theme.mutedText}`}>
             Puedes abrir la conversación compartiendo una idea breve.
@@ -109,7 +109,7 @@ export default function CommentsPanel({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.22, ease: "easeOut" }}
-                  className={`rounded-2xl border px-3.5 py-3 ${bubbleBg}`}
+                  className={`rounded-[var(--radius-panel)] border px-3.5 py-3 ${bubbleBg}`}
                 >
                   <div className="flex items-start gap-3">
                     <FaithAvatar avatarId={comment.author.avatarUrl} fallbackName={comment.author.name} size="sm" />
@@ -150,13 +150,13 @@ export default function CommentsPanel({
           maxLength={240}
           placeholder={currentUserId ? "Escribe un comentario breve..." : "Inicia sesión para comentar"}
           disabled={!currentUserId || isSending}
-          className={`min-w-0 flex-1 rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 focus:ring-[#9aa58f]/25 disabled:cursor-not-allowed disabled:opacity-60 ${theme.input}`}
+          className={`min-w-0 flex-1 rounded-[var(--radius-input)] border px-4 py-3 text-sm outline-none transition focus:ring-2 focus:ring-[#9aa58f]/25 disabled:cursor-not-allowed disabled:opacity-60 ${theme.input}`}
         />
         <button
           type="button"
           onClick={handleCreateComment}
           disabled={!text.trim() || isSending || !currentUserId}
-          className={`rounded-2xl px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${theme.button}`}
+          className={`rounded-[var(--radius-input)] px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${theme.button}`}
         >
           {isSending ? "..." : "Enviar"}
         </button>

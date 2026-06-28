@@ -30,12 +30,12 @@ export default function DiaryStats({ diaryEntries }: DiaryStatsProps) {
         {stats.map((stat) => (
           <article
             key={stat.label}
-            className={`rounded-[1.7rem] border p-4 text-center shadow-sm backdrop-blur sm:rounded-3xl sm:p-5 ${theme.card}`}
+            className={`rounded-[var(--radius-card)] border p-4 text-center shadow-sm sm:p-5 ${theme.card}`}
           >
             <p className={`text-2xl font-bold sm:text-3xl ${theme.primaryText}`}>
               {stat.value}
             </p>
-            <p className={`mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.18em] ${theme.accentText}`}>
+            <p className={`mt-1 text-[10px] font-semibold uppercase tracking-[0.1em] sm:text-xs ${theme.accentText}`}>
               {stat.label}
             </p>
           </article>

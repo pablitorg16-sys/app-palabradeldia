@@ -87,11 +87,11 @@ export default function AuthModal({ mode, onModeChange, onClose }: AuthModalProp
     >
       <section
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-md rounded-3xl border p-6 shadow-2xl ${theme.card}`}
+        className={`w-full max-w-md rounded-[var(--radius-modal)] border p-6 shadow-xl ${theme.card}`}
       >
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <p className={`mb-2 text-sm font-semibold uppercase tracking-[0.25em] ${theme.accentText}`}>
+            <p className={`mb-2 text-sm font-semibold uppercase tracking-[0.1em] ${theme.accentText}`}>
               PalabradelDía
             </p>
             <h2 className={`text-2xl font-bold ${theme.primaryText}`}>{title}</h2>
@@ -123,7 +123,7 @@ export default function AuthModal({ mode, onModeChange, onClose }: AuthModalProp
 
         <div className="my-5 flex items-center gap-3">
           <div className="h-px flex-1 bg-[#5f6f52]/25" />
-          <span className={`text-xs font-semibold uppercase tracking-[0.2em] ${theme.accentText}`}>o</span>
+          <span className={`text-xs font-semibold uppercase tracking-[0.1em] ${theme.accentText}`}>o</span>
           <div className="h-px flex-1 bg-[#5f6f52]/25" />
         </div>
 

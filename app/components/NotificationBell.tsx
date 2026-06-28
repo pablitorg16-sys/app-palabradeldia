@@ -1,4 +1,5 @@
 "use client";
+import { Bell } from "lucide-react";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
@@ -83,24 +84,25 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
     <div ref={menuRef} className="relative z-[120]">
       <button
         onClick={handleToggleOpen}
-        className={`relative rounded-full border px-4 py-2 text-sm font-semibold transition ${theme.mutedButton}`}
+        className={`relative flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-[var(--soft-bg)]`}
+        aria-label="Notificaciones"
       >
-        🔔
+        <Bell size={17} className={theme.accentText} />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#d9e2cf] px-1 text-xs font-bold text-[#202822]">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#d9e2cf] px-0.5 text-[10px] font-bold text-[#202822]">
             {unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className={`fixed left-3 right-3 top-24 z-[400] max-h-[calc(100vh-8rem)] overflow-y-auto rounded-[2rem] border p-4 shadow-2xl sm:absolute sm:left-auto sm:right-0 sm:top-14 sm:max-h-[32rem] sm:w-[24rem] ${panelClass}`}>
-          <p className={`mb-4 text-sm font-semibold uppercase tracking-[0.2em] ${theme.accentText}`}>
+        <div className={`fixed left-3 right-3 top-24 z-[400] max-h-[calc(100vh-8rem)] overflow-y-auto rounded-[var(--radius-modal)] border p-4 shadow-2xl sm:absolute sm:left-auto sm:right-0 sm:top-14 sm:max-h-[32rem] sm:w-[24rem] ${panelClass}`}>
+          <p className={`mb-4 text-sm font-semibold uppercase tracking-[0.1em] ${theme.accentText}`}>
             Notificaciones
           </p>
 
           {notifications.length === 0 ? (
-            <p className={`rounded-2xl p-4 text-sm ${theme.innerCard} ${theme.bodyText}`}>
+            <p className={`rounded-[var(--radius-panel)] p-4 text-sm ${theme.innerCard} ${theme.bodyText}`}>
               Todavía no tienes notificaciones.
             </p>
           ) : (
@@ -113,7 +115,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
                     type="button"
                     onClick={() => handleNotificationClick(notification)}
                     disabled={!clickable}
-                    className={`flex w-full gap-3 rounded-2xl p-3 text-left transition ${theme.innerCard} ${clickable ? "hover:scale-[1.01]" : "cursor-default"} ${notification.read ? "opacity-80" : "opacity-100"}`}
+                    className={`flex w-full gap-3 rounded-[var(--radius-panel)] p-3 text-left transition ${theme.innerCard} ${clickable ? "hover:scale-[1.01]" : "cursor-default"} ${notification.read ? "opacity-80" : "opacity-100"}`}
                   >
                     <FaithAvatar avatarId={notification.actor.avatarUrl} fallbackName={notification.actor.name} size="sm" />
                     <div className="min-w-0">

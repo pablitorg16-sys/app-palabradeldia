@@ -1,4 +1,5 @@
 "use client";
+import { Bell } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { getThemeClasses } from "../utils/theme";
@@ -76,9 +77,9 @@ export default function DailyReminderCard() {
   }
 
   return (
-    <section className={`rounded-2xl border px-4 py-3 shadow-sm backdrop-blur ${theme.softCard}`}>
+    <section className={`rounded-[var(--radius-panel)] border px-4 py-3 shadow-sm ${theme.softCard}`}>
       <div className="flex items-center gap-3">
-        <span className="text-lg">🔔</span>
+        <Bell size={18} className={theme.accentText}></Bell>
         <p className={`flex-1 text-sm font-semibold ${theme.primaryText}`}>
           Recordatorio diario
         </p>
