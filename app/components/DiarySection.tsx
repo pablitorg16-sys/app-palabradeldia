@@ -116,11 +116,14 @@ export default function DiarySection({
   return (
     <section data-tour="diary-section" className="space-y-6">
       <div>
-        <p className={`text-xs font-bold uppercase tracking-[0.5em] ${theme.accentText}`}>
-          Diario de reflexiones
-        </p>
-        <p className={`mt-2 text-sm leading-6 ${theme.bodyText}`}>
-          Revisa tus meditaciones personales y las que has guardado de la comunidad.
+        <h2
+          className={`text-[1.7rem] font-medium italic leading-none sm:text-[2rem] ${theme.primaryText}`}
+          style={{ fontFamily: "var(--font-display, Georgia, serif)" }}
+        >
+          Diario
+        </h2>
+        <p className={`mt-2 text-sm leading-6 ${theme.mutedText}`}>
+          Tus reflexiones personales y las que has guardado de la comunidad.
         </p>
       </div>
 
@@ -139,7 +142,7 @@ export default function DiarySection({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.28, ease: "easeOut" }}
-          className={`rounded-[2rem] border p-7 shadow-sm ${theme.card}`}
+          className={`rounded-[var(--radius-card)] border p-7 ${theme.card}`}
         >
           {isDiaryCompletelyEmpty ? (
             <>
@@ -147,8 +150,7 @@ export default function DiarySection({
                 <Notebook size={28} className={theme.accentText} />
               </div>
 
-              <p className={`text-xs font-semibold uppercase tracking-[0.22em] ${theme.accentText}`}>
-                Tu diario empieza aquí
+              <p className={`text-xs font-semibold uppercase tracking-[0.12em] ${theme.accentText}`}>Tu diario empieza aquí
               </p>
 
               <h3 className={`mt-2 text-xl font-bold ${theme.primaryText}`}>
@@ -195,8 +197,7 @@ export default function DiarySection({
             </>
           ) : (
             <>
-              <p className={`text-xs font-semibold uppercase tracking-[0.28em] ${theme.accentText}`}>
-                Sin resultados
+              <p className={`text-xs font-semibold uppercase tracking-[0.12em] ${theme.accentText}`}>Sin resultados
               </p>
               <h3 className={`mt-3 text-xl font-bold ${theme.primaryText}`}>
                 No hay reflexiones con estos filtros

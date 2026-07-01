@@ -1,6 +1,6 @@
 function Question({ text }: { text: string }) {
   return (
-    <button className="flex w-full items-center justify-between rounded-2xl border border-stone-200 bg-stone-100/80 px-4 py-4 text-left text-sm transition hover:bg-stone-200">
+    <button className="flex w-full items-center justify-between rounded-[var(--radius-panel)] border border-stone-200 bg-stone-100/80 px-4 py-4 text-left text-sm transition hover:bg-stone-200">
       <span>{text}</span>
       <span>›</span>
     </button>
@@ -10,7 +10,7 @@ function Question({ text }: { text: string }) {
 export default function ReflectionCard() {
   return (
     <section className="space-y-8">
-      <article className="rounded-3xl border border-stone-300 bg-white/70 p-7 shadow-sm backdrop-blur">
+      <article className="rounded-[var(--radius-card)] border border-stone-300 bg-white/70 p-7 shadow-sm">
         <h3 className="mb-5 text-xl font-bold">Reflexión del día</h3>
 
         <p className="leading-8 text-stone-700">
@@ -31,7 +31,7 @@ export default function ReflectionCard() {
         </button>
       </article>
 
-      <article className="rounded-3xl border border-stone-300 bg-white/70 p-7 shadow-sm backdrop-blur">
+      <article className="rounded-[var(--radius-card)] border border-stone-300 bg-white/70 p-7 shadow-sm">
         <h3 className="mb-5 text-xl font-bold">Oración del día</h3>
 
         <p className="leading-8 text-stone-700">
@@ -46,3 +46,4 @@ export default function ReflectionCard() {
     </section>
   );
 }
+

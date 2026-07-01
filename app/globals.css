@@ -115,3 +115,33 @@ body {
     --btn-text:    #26351f;
   }
 }
+
+/* --- Design system ------------------------------------------- */
+:root {
+  /* Typography families (populated by next/font via CSS vars) */
+  --font-sans-fallback:   system-ui, sans-serif;
+  --font-serif-fallback:  Georgia, serif;
+
+  /* Radius scale */
+  --radius-card:   1rem;       /* 16px → tarjetas principales */
+  --radius-modal:  1.25rem;    /* 20px → modales */
+  --radius-panel:  0.75rem;    /* 12px → paneles interiores, comentarios */
+  --radius-input:  0.625rem;   /* 10px → inputs */
+}
+
+body {
+  font-family: var(--font-sans, var(--font-sans-fallback));
+}
+
+/* --- Grain texture overlay ----------------------------------- */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99998;
+  opacity: 0.038;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIj48ZmlsdGVyIGlkPSJnIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC44NSIgbnVtT2N0YXZlcz0iNCIgc3RpdGNoVGlsZXM9InN0aXRjaCI+PC9mZVR1cmJ1bGVuY2U+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCI+PC9mZUNvbG9yTWF0cml4PjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiBmaWx0ZXI9InVybCgjZykiPjwvcmVjdD48L3N2Zz4=");
+  background-repeat: repeat;
+}

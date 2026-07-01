@@ -6,7 +6,6 @@ import { useCallback, useEffect, useState } from "react";
 import AuthModal from "./components/AuthModal";
 import AuthRequiredCard from "./components/AuthRequiredCard";
 import CommunitySection from "./components/CommunitySection";
-import DailyReminderCard from "./components/DailyReminderCard";
 import DiarySection from "./components/DiarySection";
 import DiaryStats from "./components/DiaryStats";
 import EditProfileModal from "./components/EditProfileModal";
@@ -230,9 +229,7 @@ export default function Home() {
           )}
         </div>
 
-        <div className="my-10 border-t border-[var(--divider)]" />
-        <DailyReminderCard />
-        <div className="my-10" />
+        <div className="my-8" />
         <InstallAppButton />
       </section>
 

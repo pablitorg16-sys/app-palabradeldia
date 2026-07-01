@@ -1,4 +1,5 @@
 "use client";
+import { Star } from "lucide-react";
 
 import { useState } from "react";
 import type { ReflectionTag } from "../types";
@@ -42,7 +43,7 @@ export default function DiaryFilters({
     : "border-amber-200 bg-amber-100 text-amber-800";
 
   return (
-    <section className={`mb-5 rounded-[1.7rem] border p-3 shadow-sm backdrop-blur ${theme.innerCard}`}>
+    <section className={`mb-5 rounded-[var(--radius-panel)] border p-3 shadow-sm bg-[var(--soft-bg)]`}>
       <div className="grid grid-cols-2 justify-center gap-2 sm:flex sm:items-center sm:justify-center">
         <button
           type="button"
@@ -51,7 +52,7 @@ export default function DiaryFilters({
             showOnlyFavorites ? favActiveClass : theme.mutedButton
           }`}
         >
-          ★ Favoritas
+          <Star size={13} className="mr-1.5"></Star>Favoritas
         </button>
 
         <button

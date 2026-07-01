@@ -98,11 +98,14 @@ export default function CommunitySection({
   return (
     <section data-tour="community-section" className="space-y-5">
       <div>
-        <p className={`text-xs font-semibold uppercase tracking-[0.35em] ${theme.accentText}`}>
+        <h2
+          className={`text-[1.7rem] font-medium italic leading-none sm:text-[2rem] ${theme.primaryText}`}
+          style={{ fontFamily: "var(--font-display, Georgia, serif)" }}
+        >
           Comunidad
-        </p>
-        <p className={`mt-2 text-sm leading-6 ${theme.bodyText}`}>
-          Lee meditaciones compartidas por otros usuarios y guarda las que quieras llevar a tu diario.
+        </h2>
+        <p className={`mt-2 text-sm leading-6 ${theme.mutedText}`}>
+          Reflexiones compartidas por la comunidad. Guarda las que te inspiren.
         </p>
       </div>
 
@@ -112,7 +115,7 @@ export default function CommunitySection({
       </div>
 
       {sortedPosts.length === 0 ? (
-        <div className={`rounded-[2rem] border p-7 shadow-sm ${theme.card}`}>
+        <div className={`rounded-[var(--radius-card)] border p-7 ${theme.card}`}>
           <div className={`mb-5 flex h-14 w-14 items-center justify-center rounded-[1.1rem] border ${theme.innerCard}`}>
             {feedMode === "following" ? (
               <UserPlus size={24} className={theme.accentText} />
@@ -121,7 +124,7 @@ export default function CommunitySection({
             )}
           </div>
 
-          <p className={`text-xs font-semibold uppercase tracking-[0.22em] ${theme.accentText}`}>
+          <p className={`text-xs font-semibold uppercase tracking-[0.12em] ${theme.accentText}`}>
             {feedMode === "following" ? "Siguiendo" : "Populares"}
           </p>
 

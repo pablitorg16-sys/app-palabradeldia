@@ -64,11 +64,11 @@ export default function DiaryEntryCard({
     <>
       <article
         id={`reflection-${entry.id}`}
-        className={`rounded-[2rem] border p-5 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-[1px] ${theme.innerCard}`}
+        className={`border-b border-[var(--divider)] py-6 last:border-b-0`}
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <p className={`text-sm font-bold ${theme.accentText}`}>{entry.date} · {entry.time}</p>
+            <p className={`text-xs font-medium ${theme.mutedText}`}>{entry.date} · {entry.time}</p>
             <p className={`mt-1 text-xs font-medium uppercase tracking-[0.14em] ${theme.mutedText}`}>{sourceText}</p>
           </div>
           <button
@@ -79,7 +79,7 @@ export default function DiaryEntryCard({
           </button>
         </div>
 
-        <p className={`text-[1rem] leading-7 ${theme.bodyText}`}>{entry.text}</p>
+        <p className={`text-[1.05rem] leading-[1.8] ${theme.bodyText}`} style={{ fontFamily: "var(--font-body, Georgia, serif)" }}>{entry.text}</p>
 
         <div className="mt-5 flex flex-wrap items-center gap-2">
           <button
@@ -100,7 +100,7 @@ export default function DiaryEntryCard({
 
           {entry.favorite && (
             <span className="rounded-full border border-amber-200 bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-800">
-              ★ Favorita
+              Favorita
             </span>
           )}
 
@@ -112,7 +112,7 @@ export default function DiaryEntryCard({
 
           {entry.source === "own" && entry.shared && (
             <span className={`rounded-full border px-3 py-1 text-sm font-semibold ${theme.pill}`}>
-              ♥ {entry.likes ?? 0} me gusta
+              {entry.likes ?? 0} me gusta
             </span>
           )}
         </div>
@@ -129,7 +129,7 @@ export default function DiaryEntryCard({
         )}
 
         {showActions && (
-          <div className={`mt-4 flex flex-wrap gap-2 rounded-2xl border p-3 ${theme.innerCard}`}>
+          <div className={`mt-4 flex flex-wrap gap-2 rounded-[var(--radius-panel)] border p-3 bg-[var(--soft-bg)]`}>
             <button
               onClick={() => onToggleFavorite(entryId)}
               className={`rounded-full border px-3 py-1 text-sm font-semibold transition ${
@@ -189,3 +189,4 @@ export default function DiaryEntryCard({
     </>
   );
 }
+

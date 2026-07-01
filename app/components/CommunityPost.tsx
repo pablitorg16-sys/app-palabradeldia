@@ -1,4 +1,5 @@
 "use client";
+import { Heart } from "lucide-react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
@@ -72,7 +73,7 @@ export default function CommunityPostCard({
     <>
       <article
         id={`reflection-${post.id}`}
-        className={`rounded-[2rem] border px-5 py-4 shadow-sm transition-all duration-300 hover:-translate-y-[1px] ${theme.innerCard}`}
+        className={`border-b border-[var(--divider)] py-5 last:border-b-0 transition-all duration-300`}
       >
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -103,7 +104,7 @@ export default function CommunityPostCard({
           )}
         </div>
 
-        <p className={`text-justify text-[0.97rem] leading-[1.9] sm:text-left ${theme.bodyText}`}>
+        <p className={`text-justify text-[0.97rem] leading-[1.9] sm:text-left ${theme.bodyText}`} style={{ fontFamily: "var(--font-body, Georgia, serif)" }}>
           {post.text}
         </p>
 
@@ -143,7 +144,7 @@ export default function CommunityPostCard({
                   post.isLikedByMe ? activeClass : theme.mutedButton
                 }`}
               >
-                {post.isLikedByMe ? "💚" : "♡"} {post.likes}
+                <Heart size={13} className={post.isLikedByMe ? "fill-current" : ""}></Heart> {post.likes}
               </button>
             )}
 

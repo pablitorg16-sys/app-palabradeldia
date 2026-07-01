@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { DiaryEntry, User } from "../types";
 import FaithAvatar from "./FaithAvatar";
+import ProfileModal from "./ProfileModal";
 import { getFollowerProfiles, getFollowingProfiles, getProfileFollowStats } from "../utils/profiles";
 import { useTheme } from "../context/ThemeContext";
 import { getThemeClasses } from "../utils/theme";
@@ -25,6 +26,7 @@ export default function UserMenu({ user, diaryEntries: _diaryEntries, onOpenProf
   const [followers, setFollowers] = useState<User[]>([]);
   const [following, setFollowing] = useState<User[]>([]);
   const [openFollowList, setOpenFollowList] = useState<"followers" | "following" | null>(null);
+  const [viewingProfile, setViewingProfile] = useState<User | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -72,77 +74,100 @@ export default function UserMenu({ user, diaryEntries: _diaryEntries, onOpenProf
     ? "border-[#d9e2cf]/15 bg-[#202822]"
     : "border-[#d8d1c0] bg-[#fffaf0]";
 
+  function openProfile(profile: User) {
+    setIsOpen(false);
+    setViewingProfile(profile);
+  }
+
   return (
-    <div ref={menuRef} className="relative z-[120]">
-      <button
-        type="button"
-        onClick={() => setIsOpen((current) => !current)}
-        className={`flex items-center gap-3 rounded-full border px-3 py-2 text-sm font-semibold transition ${theme.mutedButton}`}
-      >
-        <FaithAvatar avatarId={user.avatarUrl} fallbackName={user.name} size="sm" />
-        <span className="hidden max-w-32 truncate sm:block">{user.name}</span>
-      </button>
+    <>
+      <div ref={menuRef} className="relative z-[120]">
+        {/* Trigger — círculo mínimo con el avatar */}
+        <button
+          type="button"
+          onClick={() => setIsOpen((current) => !current)}
+          className="rounded-full transition hover:ring-2 hover:ring-[var(--accent)]/30"
+          aria-label="Men&#250; de perfil"
+        >
+          <FaithAvatar avatarId={user.avatarUrl} fallbackName={user.name} size="sm" />
+        </button>
 
-      {isOpen && (
-        <div className={`absolute right-0 top-16 z-[300] max-h-[calc(100vh-7rem)] w-[min(calc(100vw-1.5rem),25rem)] overflow-y-auto rounded-[2rem] border p-5 shadow-2xl ${panelClass}`}>
-          <div className="mb-5">
-            <div className="mb-3 flex min-w-0 items-center gap-3">
-              <FaithAvatar avatarId={user.avatarUrl} fallbackName={user.name} size="md" />
-              <div className="min-w-0">
-                <p className={`truncate text-lg font-bold ${theme.primaryText}`}>{user.name}</p>
-                <p className={`truncate text-sm font-semibold ${theme.accentText}`}>@{user.username}</p>
-              </div>
-            </div>
-            {user.bio && <p className={`mt-3 text-sm leading-6 ${theme.bodyText}`}>{user.bio}</p>}
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 text-center">
-            <button type="button" onClick={() => setOpenFollowList((c) => c === "followers" ? null : "followers")} className="text-left">
-              <ProfileMiniStat label="Seguidores" value={followersCount} />
-            </button>
-            <button type="button" onClick={() => setOpenFollowList((c) => c === "following" ? null : "following")} className="text-left">
-              <ProfileMiniStat label="Siguiendo" value={followingCount} />
-            </button>
-          </div>
-
-          {openFollowList && (
-            <div className={`mt-4 rounded-2xl border p-4 ${followListPanelClass}`}>
-              <p className={`mb-3 text-sm font-bold ${theme.primaryText}`}>
-                {openFollowList === "followers" ? "Seguidores" : "Siguiendo"}
-              </p>
-              {(openFollowList === "followers" ? followers : following).length === 0 ? (
-                <p className={`text-sm ${theme.mutedText}`}>Todavía no hay nadie aquí.</p>
-              ) : (
-                <div className="space-y-3">
-                  {(openFollowList === "followers" ? followers : following).map((profile) => (
-                    <div key={profile.id} className="flex items-center gap-3">
-                      <FaithAvatar avatarId={profile.avatarUrl} fallbackName={profile.name} size="sm" />
-                      <div className="min-w-0">
-                        <p className={`truncate text-sm font-bold ${theme.primaryText}`}>{profile.name}</p>
-                        <p className={`truncate text-xs font-semibold ${theme.accentText}`}>@{profile.username}</p>
-                      </div>
-                    </div>
-                  ))}
+        {isOpen && (
+          <div className={`absolute right-0 top-12 z-[300] max-h-[calc(100vh-7rem)] w-[min(calc(100vw-1.5rem),25rem)] overflow-y-auto rounded-[2rem] border p-5 shadow-2xl ${panelClass}`}>
+            <div className="mb-5">
+              <div className="mb-3 flex min-w-0 items-center gap-3">
+                <FaithAvatar avatarId={user.avatarUrl} fallbackName={user.name} size="md" />
+                <div className="min-w-0">
+                  <p className={`truncate text-lg font-bold ${theme.primaryText}`}>{user.name}</p>
+                  <p className={`truncate text-sm font-semibold ${theme.accentText}`}>@{user.username}</p>
                 </div>
-              )}
+              </div>
+              {user.bio && <p className={`mt-3 text-sm leading-6 ${theme.bodyText}`}>{user.bio}</p>}
             </div>
-          )}
 
-          <div className={`my-5 border-t ${dividerClass}`} />
+            <div className="grid grid-cols-2 gap-3 text-center">
+              <button type="button" onClick={() => setOpenFollowList((c) => c === "followers" ? null : "followers")} className="text-left">
+                <ProfileMiniStat label="Seguidores" value={followersCount} />
+              </button>
+              <button type="button" onClick={() => setOpenFollowList((c) => c === "following" ? null : "following")} className="text-left">
+                <ProfileMiniStat label="Siguiendo" value={followingCount} />
+              </button>
+            </div>
 
-          <div className="space-y-3">
-            <button type="button" onClick={() => { setIsOpen(false); onOpenProfileSettings(); }}
-              className={`w-full rounded-2xl border px-4 py-4 text-sm font-semibold transition ${theme.mutedButton}`}>
-              Ajustes de perfil
-            </button>
-            <button type="button" onClick={onSignOut}
-              className={`w-full rounded-2xl border px-4 py-4 text-sm font-semibold transition ${signOutClass}`}>
-              Cerrar sesión
-            </button>
+            {openFollowList && (
+              <div className={`mt-4 rounded-2xl border p-4 ${followListPanelClass}`}>
+                <p className={`mb-3 text-sm font-bold ${theme.primaryText}`}>
+                  {openFollowList === "followers" ? "Seguidores" : "Siguiendo"}
+                </p>
+                {(openFollowList === "followers" ? followers : following).length === 0 ? (
+                  <p className={`text-sm ${theme.mutedText}`}>Todav&#237;a no hay nadie aqu&#237;.</p>
+                ) : (
+                  <div className="space-y-1">
+                    {(openFollowList === "followers" ? followers : following).map((profile) => (
+                      <button
+                        key={profile.id}
+                        type="button"
+                        onClick={() => openProfile(profile)}
+                        className={`flex w-full items-center gap-3 rounded-[var(--radius-panel)] px-2 py-2 text-left transition hover:bg-[var(--soft-bg)]`}
+                      >
+                        <FaithAvatar avatarId={profile.avatarUrl} fallbackName={profile.name} size="sm" />
+                        <div className="min-w-0">
+                          <p className={`truncate text-sm font-bold ${theme.primaryText}`}>{profile.name}</p>
+                          <p className={`truncate text-xs font-semibold ${theme.accentText}`}>@{profile.username}</p>
+                        </div>
+                        <span className={`ml-auto text-xs ${theme.mutedText}`}>&#8594;</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className={`my-5 border-t ${dividerClass}`} />
+
+            <div className="space-y-3">
+              <button type="button" onClick={() => { setIsOpen(false); onOpenProfileSettings(); }}
+                className={`w-full rounded-2xl border px-4 py-4 text-sm font-semibold transition ${theme.mutedButton}`}>
+                Ajustes de perfil
+              </button>
+              <button type="button" onClick={onSignOut}
+                className={`w-full rounded-2xl border px-4 py-4 text-sm font-semibold transition ${signOutClass}`}>
+                Cerrar sesi&#243;n
+              </button>
+            </div>
           </div>
-        </div>
+        )}
+      </div>
+
+      {/* Modal de perfil de otro usuario — fuera del div relativo para evitar z-index */}
+      {viewingProfile && (
+        <ProfileModal
+          user={viewingProfile}
+          currentUserId={user.id}
+          onClose={() => setViewingProfile(null)}
+        />
       )}
-    </div>
+    </>
   );
 }
 

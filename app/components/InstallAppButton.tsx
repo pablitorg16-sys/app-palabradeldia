@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Smartphone } from "lucide-react";
 import { getThemeClasses } from "../utils/theme";
 
 type BeforeInstallPromptEvent = Event & {
@@ -57,9 +58,9 @@ export default function InstallAppButton() {
 
   return (
     <section
-      className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 shadow-sm backdrop-blur sm:hidden ${theme.card}`}
+      className={`flex w-full items-center gap-3 rounded-[var(--radius-card)] border px-4 py-3 shadow-sm sm:hidden ${theme.card}`}
     >
-      <span className="text-xl">📲</span>
+      <Smartphone size={20} className={theme.accentText} />
       <div className="flex-1 min-w-0">
         <p className={`text-xs font-semibold ${theme.primaryText}`}>
           Instalar PalabradelDía

@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+import { BookOpen, PenLine, Users } from "lucide-react";
 import { getThemeClasses } from "../utils/theme";
 import type { Tab } from "../types";
 
@@ -8,50 +10,57 @@ type TabsNavProps = {
   onTabChange: (tab: Tab) => void;
 };
 
+const TABS = [
+  { id: "evangelio" as Tab, label: "Evangelio", Icon: BookOpen },
+  { id: "diario"    as Tab, label: "Diario",    Icon: PenLine  },
+  { id: "comunidad" as Tab, label: "Comunidad", Icon: Users    },
+];
+
 export default function TabsNav({ activeTab, onTabChange }: TabsNavProps) {
   const theme = getThemeClasses();
 
   return (
-    <>
-      <nav className={`mb-8 hidden rounded-2xl border p-3 shadow-sm backdrop-blur sm:sticky sm:top-4 sm:z-50 sm:block ${theme.softCard}`}>
-        <div className="grid w-full grid-cols-3 gap-3">
-          <TabButton label="Evangelio" active={activeTab === "evangelio"} onClick={() => onTabChange("evangelio")} />
-          <TabButton label="Diario"    active={activeTab === "diario"}    onClick={() => onTabChange("diario")} />
-          <TabButton label="Comunidad" active={activeTab === "comunidad"} onClick={() => onTabChange("comunidad")} />
+    <React.Fragment>
+      {/* Desktop: underline tab strip */}
+      <nav className="mb-8 hidden sm:sticky sm:top-0 sm:z-50 sm:block bg-[var(--page-bg)]">
+        <div className="flex border-b border-[var(--divider)]">
+          {TABS.map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              onClick={() => onTabChange(id)}
+              className={`-mb-px flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition ${
+                activeTab === id
+                  ? "border-[var(--accent)] text-[var(--primary)]"
+                  : "border-transparent text-[var(--muted)] hover:text-[var(--body)]"
+              }`}
+            >
+              <Icon size={14}></Icon>
+              {label}
+            </button>
+          ))}
         </div>
       </nav>
 
+      {/* Mobile: floating pill bar */}
       <nav
-        className={`fixed bottom-2 left-4 right-4 z-[120] rounded-3xl border p-1.5 shadow-2xl backdrop-blur sm:hidden ${theme.softCard}`}
+        className={`fixed bottom-2 left-4 right-4 z-[120] sm:hidden rounded-[var(--radius-modal)] border p-1.5 shadow-xl ${theme.softCard}`}
         style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.375rem)" }}
       >
-        <div className="grid grid-cols-3 gap-2">
-          <TabButton label="Evangelio" icon="✦" active={activeTab === "evangelio"} onClick={() => onTabChange("evangelio")} />
-          <TabButton label="Diario"    icon="✍️" active={activeTab === "diario"}    onClick={() => onTabChange("diario")} />
-          <TabButton label="Comunidad" icon="☷"  active={activeTab === "comunidad"} onClick={() => onTabChange("comunidad")} />
+        <div className="grid grid-cols-3 gap-1.5">
+          {TABS.map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              onClick={() => onTabChange(id)}
+              className={`flex flex-col items-center justify-center gap-1 rounded-[var(--radius-panel)] px-2 py-2 text-[10px] font-semibold transition active:scale-[0.97] ${
+                activeTab === id ? theme.button : theme.mutedText
+              }`}
+            >
+              <Icon size={16}></Icon>
+              {label}
+            </button>
+          ))}
         </div>
       </nav>
-    </>
-  );
-}
-
-function TabButton({ label, icon, active, onClick }: {
-  label: string;
-  icon?: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  const theme = getThemeClasses();
-
-  return (
-    <button
-      onClick={onClick}
-      className={`flex h-full w-full flex-col items-center justify-center rounded-2xl px-2 py-1.5 text-center text-[10px] font-semibold transition active:scale-[0.98] sm:flex-row sm:px-5 sm:py-3 sm:text-sm ${
-        active ? theme.button : "bg-white/45 text-[#26351f] hover:bg-white"
-      }`}
-    >
-      {icon && <span className="mb-0.5 text-base leading-none">{icon}</span>}
-      {label}
-    </button>
+    </React.Fragment>
   );
 }
