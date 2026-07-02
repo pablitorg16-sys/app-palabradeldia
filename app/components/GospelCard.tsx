@@ -17,12 +17,22 @@ export default function GospelCard({ gospel }: GospelCardProps) {
     <article className="pb-8 pt-2 sm:pb-12 sm:pt-4">
       <div className="mb-5 flex items-center gap-4 sm:mb-7">
         <div className={`h-px flex-1 ${theme.divider}`}></div>
-        <p
-          className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${theme.mutedText}`}
-          style={{ fontFamily: "var(--font-ui, sans-serif)" }}
-        >
-          {dateStr}
-        </p>
+        <div className="flex flex-col items-center gap-1">
+          <p
+            className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${theme.mutedText}`}
+            style={{ fontFamily: "var(--font-ui, sans-serif)" }}
+          >
+            {dateStr}
+          </p>
+          {gospel.celebration && (
+            <p
+              className={`text-[9px] font-semibold uppercase tracking-[0.12em] opacity-60 ${theme.mutedText}`}
+              style={{ fontFamily: "var(--font-ui, sans-serif)" }}
+            >
+              {gospel.celebration}
+            </p>
+          )}
+        </div>
         <div className={`h-px flex-1 ${theme.divider}`}></div>
       </div>
 

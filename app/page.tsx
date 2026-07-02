@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 
 import AuthModal from "./components/AuthModal";
 import AuthRequiredCard from "./components/AuthRequiredCard";
@@ -231,6 +232,13 @@ export default function Home() {
 
         <div className="my-8" />
         <InstallAppButton />
+        <footer className="mt-6 pb-2 text-center">
+          <p className={`text-xs ${theme.mutedText}`} style={{ fontFamily: "var(--font-ui, sans-serif)" }}>
+            <Link href="/privacidad" className="transition hover:opacity-70">Privacidad</Link>
+            {" · "}
+            <Link href="/terminos" className="transition hover:opacity-70">T&#233;rminos</Link>
+          </p>
+        </footer>
       </section>
 
       {authMode && (

@@ -14,8 +14,8 @@ function getTodayDateKey() {
 }
 
 const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 2000;
-const TIMEOUT_MS = 8000;
+const RETRY_DELAY_MS = 1000;
+const TIMEOUT_MS = 12000;
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([

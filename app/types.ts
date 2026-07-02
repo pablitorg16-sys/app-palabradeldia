@@ -11,6 +11,7 @@ export type Gospel = {
   reference: string;
   title: string;
   text: string;
+  celebration?: string;
 };
 
 export type ReflectionTag = {

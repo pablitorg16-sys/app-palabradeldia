@@ -130,7 +130,7 @@ body {
 }
 
 body {
-  font-family: var(--font-sans, var(--font-sans-fallback));
+  font-family: var(--font-ui, var(--font-sans-fallback));
 }
 
 /* --- Grain texture overlay ----------------------------------- */
