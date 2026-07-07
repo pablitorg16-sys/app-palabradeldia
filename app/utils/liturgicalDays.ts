@@ -53,5 +53,5 @@ export async function getLiturgicalDaysByDates(
     return [];
   }
 
-  return Promise.all((data as LiturgicalDayRow[]).map(mapLiturgicalDayToGospel));
+  return (data as LiturgicalDayRow[]).map(mapLiturgicalDayToGospel);
 }
