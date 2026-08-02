@@ -18,7 +18,15 @@ const GOOGLE_AUTH_ENABLED = false;
 export default function AuthModal({ mode, onModeChange, onClose }: AuthModalProps) {
   const theme = getThemeClasses();
   const isSignup = mode === "signup";
-  const title = isSignup ? "Crear cuenta" : "Iniciar sesión";
+
+  // Vista interna: null = usa el modo externo (login/signup), "recover" = recuperación
+  const [view, setView] = useState<"recover" | null>(null);
+
+  const title = view === "recover"
+    ? "Recuperar contraseña"
+    : isSignup
+    ? "Crear cuenta"
+    : "Iniciar sesión";
 
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -27,6 +35,11 @@ export default function AuthModal({ mode, onModeChange, onClose }: AuthModalProp
   const [authMessage, setAuthMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Estado específico de recuperación
+  const [recoverEmail, setRecoverEmail] = useState("");
+  const [recoverSent, setRecoverSent] = useState(false);
+  const [recoverLoading, setRecoverLoading] = useState(false);
+
   useEffect(() => {
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") onClose();
@@ -34,6 +47,14 @@ export default function AuthModal({ mode, onModeChange, onClose }: AuthModalProp
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
   }, [onClose]);
+
+  // Resetear estado interno al cambiar de modo externamente
+  useEffect(() => {
+    setView(null);
+    setRecoverSent(false);
+    setRecoverEmail("");
+    setAuthMessage("");
+  }, [mode]);
 
   function normalizeUsername(value: string) {
     return value.toLowerCase().trim().replace(/\s+/g, "").replace(/[^a-z0-9._]/g, "");
@@ -83,6 +104,16 @@ export default function AuthModal({ mode, onModeChange, onClose }: AuthModalProp
     if (error) setAuthMessage(error.message);
   }
 
+  async function handleRecover() {
+    if (!recoverEmail.trim()) return;
+    setRecoverLoading(true);
+    await supabase.auth.resetPasswordForEmail(recoverEmail.trim(), {
+      redirectTo: `${window.location.origin}/nueva-contrasena`,
+    });
+    setRecoverLoading(false);
+    setRecoverSent(true);
+  }
+
   return (
     <div
       onClick={onClose}
@@ -98,92 +129,157 @@ export default function AuthModal({ mode, onModeChange, onClose }: AuthModalProp
               PalabradelDía
             </p>
             <h2 className={`text-2xl font-bold ${theme.primaryText}`}>{title}</h2>
-            <p className={`mt-2 leading-7 ${theme.bodyText}`}>
-              {isSignup
-                ? "Crea una cuenta para sincronizar tu diario y participar en comunidad."
-                : "Accede a tu cuenta para recuperar tu diario y tus reflexiones."}
-            </p>
+            {view !== "recover" && (
+              <p className={`mt-2 leading-7 ${theme.bodyText}`}>
+                {isSignup
+                  ? "Crea una cuenta para sincronizar tu diario y participar en comunidad."
+                  : "Accede a tu cuenta para recuperar tu diario y tus reflexiones."}
+              </p>
+            )}
           </div>
           <button onClick={onClose} className="rounded-full bg-white/70 px-3 py-1 text-sm font-bold text-[#26351f] hover:bg-white">
             ✕
           </button>
         </div>
 
-        {GOOGLE_AUTH_ENABLED && (
+        {/* ── Vista: recuperar contraseña ── */}
+        {view === "recover" ? (
+          <div className="space-y-4">
+            {recoverSent ? (
+              <div className="space-y-4">
+                <p className={`rounded-xl bg-white/60 p-4 text-sm leading-relaxed ${theme.bodyText}`}>
+                  Si existe una cuenta con ese email, te hemos enviado un enlace para restablecer tu contraseña. Revisa también la carpeta de spam.
+                </p>
+                <button
+                  onClick={() => { setView(null); setRecoverSent(false); setRecoverEmail(""); }}
+                  className={`text-sm font-semibold transition hover:opacity-70 ${theme.accentText}`}
+                >
+                  ← Volver al inicio de sesión
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className={`text-sm leading-relaxed ${theme.bodyText}`}>
+                  Escribe tu dirección de email y te enviaremos un enlace para restablecer tu contraseña.
+                </p>
+                <input
+                  type="email"
+                  placeholder="Tu email"
+                  value={recoverEmail}
+                  onChange={(e) => setRecoverEmail(e.target.value)}
+                  className="w-full rounded-xl border border-[#5f6f52]/25 bg-white/85 px-4 py-3 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-[#26351f]"
+                />
+                <button
+                  onClick={handleRecover}
+                  disabled={recoverLoading || !recoverEmail.trim()}
+                  className={`w-full rounded-xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${theme.button}`}
+                >
+                  {recoverLoading ? "Enviando..." : "Enviar enlace de recuperación"}
+                </button>
+                <div className="text-center">
+                  <button
+                    onClick={() => setView(null)}
+                    className={`text-sm font-semibold transition hover:opacity-70 ${theme.accentText}`}
+                  >
+                    ← Volver al inicio de sesión
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          /* ── Vista: login / registro ── */
           <>
+            {GOOGLE_AUTH_ENABLED && (
+              <>
+                <div className="space-y-3">
+                  <button
+                    onClick={handleGoogleAuth}
+                    className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#5f6f52]/25 bg-white/80 px-5 py-3 text-sm font-semibold text-[#26351f] transition hover:bg-white"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="h-5 w-5">
+                      <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.659 32.657 29.262 36 24 36c-6.627 0-12-5.373-12-12S17.373 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.27 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
+                      <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 16.108 18.961 13 24 13c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.27 4 24 4c-7.682 0-14.347 4.337-17.694 10.691z"/>
+                      <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.238 0-9.617-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
+                      <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.084 5.571h.003l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
+                    </svg>
+                    Continuar con Google
+                  </button>
+                </div>
+
+                <div className="my-5 flex items-center gap-3">
+                  <div className="h-px flex-1 bg-[#5f6f52]/25" />
+                  <span className={`text-xs font-semibold uppercase tracking-[0.1em] ${theme.accentText}`}>o</span>
+                  <div className="h-px flex-1 bg-[#5f6f52]/25" />
+                </div>
+              </>
+            )}
+
             <div className="space-y-3">
+              {isSignup && (
+                <>
+                  <input type="text" placeholder="Nombre visible" value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full rounded-xl border border-[#5f6f52]/25 bg-white/85 px-4 py-3 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-[#26351f]"
+                  />
+                  <input type="text" placeholder="Usuario" value={username}
+                    onChange={(e) => setUsername(normalizeUsername(e.target.value))}
+                    className="w-full rounded-xl border border-[#5f6f52]/25 bg-white/85 px-4 py-3 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-[#26351f]"
+                  />
+                </>
+              )}
+              <input type="email" placeholder="Email" value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-xl border border-[#5f6f52]/25 bg-white/85 px-4 py-3 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-[#26351f]"
+              />
+              <input type="password" placeholder="Contraseña" value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-xl border border-[#5f6f52]/25 bg-white/85 px-4 py-3 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-[#26351f]"
+              />
+
+              {/* Enlace "¿Olvidaste tu contraseña?" — solo en login */}
+              {!isSignup && (
+                <div className="text-right">
+                  <button
+                    onClick={() => { setView("recover"); setAuthMessage(""); }}
+                    className={`text-xs font-semibold transition hover:opacity-70 ${theme.mutedText}`}
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                </div>
+              )}
+
+              {authMessage && (
+                <p className={`rounded-xl bg-white/60 p-3 text-sm ${theme.bodyText}`}>{authMessage}</p>
+              )}
               <button
-                onClick={handleGoogleAuth}
-                className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#5f6f52]/25 bg-white/80 px-5 py-3 text-sm font-semibold text-[#26351f] transition hover:bg-white"
+                onClick={handleSubmit}
+                disabled={isLoading}
+                className={`w-full rounded-xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${theme.button}`}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="h-5 w-5">
-                  <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.659 32.657 29.262 36 24 36c-6.627 0-12-5.373-12-12S17.373 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.27 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
-                  <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 16.108 18.961 13 24 13c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.27 4 24 4c-7.682 0-14.347 4.337-17.694 10.691z"/>
-                  <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.238 0-9.617-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
-                  <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.084 5.571h.003l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
-                </svg>
-                Continuar con Google
+                {isLoading ? "Procesando..." : title}
               </button>
             </div>
 
-            <div className="my-5 flex items-center gap-3">
-              <div className="h-px flex-1 bg-[#5f6f52]/25" />
-              <span className={`text-xs font-semibold uppercase tracking-[0.1em] ${theme.accentText}`}>o</span>
-              <div className="h-px flex-1 bg-[#5f6f52]/25" />
+            <div className={`mt-5 text-center text-sm ${theme.bodyText}`}>
+              {isSignup ? (
+                <p>
+                  ¿Ya tienes cuenta?{" "}
+                  <button onClick={() => onModeChange("login")} className={`font-semibold ${theme.primaryText}`}>
+                    Inicia sesión
+                  </button>
+                </p>
+              ) : (
+                <p>
+                  ¿No tienes cuenta?{" "}
+                  <button onClick={() => onModeChange("signup")} className={`font-semibold ${theme.primaryText}`}>
+                    Crea una cuenta
+                  </button>
+                </p>
+              )}
             </div>
           </>
         )}
-
-        <div className="space-y-3">
-          {isSignup && (
-            <>
-              <input type="text" placeholder="Nombre visible" value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-xl border border-[#5f6f52]/25 bg-white/85 px-4 py-3 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-[#26351f]"
-              />
-              <input type="text" placeholder="Usuario" value={username}
-                onChange={(e) => setUsername(normalizeUsername(e.target.value))}
-                className="w-full rounded-xl border border-[#5f6f52]/25 bg-white/85 px-4 py-3 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-[#26351f]"
-              />
-            </>
-          )}
-          <input type="email" placeholder="Email" value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-[#5f6f52]/25 bg-white/85 px-4 py-3 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-[#26351f]"
-          />
-          <input type="password" placeholder="Contraseña" value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-[#5f6f52]/25 bg-white/85 px-4 py-3 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-[#26351f]"
-          />
-          {authMessage && (
-            <p className={`rounded-xl bg-white/60 p-3 text-sm ${theme.bodyText}`}>{authMessage}</p>
-          )}
-          <button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className={`w-full rounded-xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${theme.button}`}
-          >
-            {isLoading ? "Procesando..." : title}
-          </button>
-        </div>
-
-        <div className={`mt-5 text-center text-sm ${theme.bodyText}`}>
-          {isSignup ? (
-            <p>
-              ¿Ya tienes cuenta?{" "}
-              <button onClick={() => onModeChange("login")} className={`font-semibold ${theme.primaryText}`}>
-                Inicia sesión
-              </button>
-            </p>
-          ) : (
-            <p>
-              ¿No tienes cuenta?{" "}
-              <button onClick={() => onModeChange("signup")} className={`font-semibold ${theme.primaryText}`}>
-                Crea una cuenta
-              </button>
-            </p>
-          )}
-        </div>
       </section>
     </div>
   );
