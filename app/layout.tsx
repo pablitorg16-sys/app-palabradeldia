@@ -31,15 +31,21 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "PalabradelDia",
-  description: "Comunidad catolica para reflexionar y compartir el Evangelio diario.",
+  title: "PalabradelDía",
+  description: "Comunidad católica para reflexionar y compartir el Evangelio diario.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "PalabradelDía",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" suppressHydrationWarning className={`${display.variable} ${body.variable} ${ui.variable}`}>
       <head>
-        <link rel="manifest" href="/manifest.json"></link>
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icon.svg" />
       </head>
       <body>
         <ThemeProvider>
