@@ -2,6 +2,7 @@
 
 import { getThemeClasses } from "../utils/theme";
 import type { Gospel } from "../types";
+import SaintsOfDay from "./SaintsOfDay";
 
 type GospelCardProps = {
   gospel: Gospel;
@@ -36,8 +37,10 @@ export default function GospelCard({ gospel }: GospelCardProps) {
         <div className={`h-px flex-1 ${theme.divider}`}></div>
       </div>
 
+      <SaintsOfDay date={gospel.date} />
+
       <p
-        className={`mb-5 text-[10px] font-semibold uppercase tracking-[0.18em] ${theme.accentText}`}
+        className={`mb-5 mt-6 first:mt-0 text-[10px] font-semibold uppercase tracking-[0.18em] ${theme.accentText}`}
         style={{ fontFamily: "var(--font-ui, sans-serif)" }}
       >
         Evangelio del día
