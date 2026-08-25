@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+import { publicSupabase } from "../lib/supabaseClient";
 import type { Gospel } from "../types";
 
 type LiturgicalDayRow = {
@@ -20,13 +20,19 @@ function mapLiturgicalDayToGospel(row: LiturgicalDayRow): Gospel {
 }
 
 export async function getLiturgicalDayByDate(
-  date: string
+  date: string,
+  signal?: AbortSignal
 ): Promise<Gospel | null> {
-  const { data, error } = await supabase
+  let query = publicSupabase
     .from("liturgical_days")
     .select("date, celebration, gospel_reference, highlight_phrase, gospel_text")
-    .eq("date", date)
-    .maybeSingle();
+    .eq("date", date);
+
+  if (signal) {
+    query = query.abortSignal(signal);
+  }
+
+  const { data, error } = await query.maybeSingle();
 
   if (error || !data) {
     console.error("Error loading liturgical day:", error);
@@ -43,7 +49,7 @@ export async function getLiturgicalDaysByDates(
 
   const uniqueDates = Array.from(new Set(dates));
 
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from("liturgical_days")
     .select("date, celebration, gospel_reference, highlight_phrase, gospel_text")
     .in("date", uniqueDates);

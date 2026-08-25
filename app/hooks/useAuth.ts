@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import type { Session, User } from "@supabase/supabase-js";
 
@@ -9,7 +9,7 @@ async function ensureProfile(user: User) {
   const username =
     user.user_metadata?.username ?? user.email?.split("@")[0] ?? "usuario";
 
-  await supabase.from("profiles").upsert(
+  const { error } = await supabase.from("profiles").upsert(
     {
       id: user.id,
       name,
@@ -18,28 +18,36 @@ async function ensureProfile(user: User) {
     },
     { onConflict: "id", ignoreDuplicates: true }
   );
+
+  if (error) throw error;
 }
 
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
+  const ensuredUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
-      setSession(data.session);
-
-      if (data.session?.user) {
-        await ensureProfile(data.session.user);
-      }
-    });
-
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
 
-      if (session?.user) {
-        await ensureProfile(session.user);
+      if (!session?.user) {
+        ensuredUserIdRef.current = null;
+        return;
       }
+
+      if (ensuredUserIdRef.current === session.user.id) return;
+      ensuredUserIdRef.current = session.user.id;
+
+      // Debe ejecutarse fuera del callback de Auth. Hacer otra consulta de
+      // Supabase dentro de onAuthStateChange puede bloquear el cliente entero.
+      window.setTimeout(() => {
+        void ensureProfile(session.user).catch((error) => {
+          ensuredUserIdRef.current = null;
+          console.error("Error ensuring profile:", error);
+        });
+      }, 0);
     });
 
     return () => {

@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Gospel } from "../types";
-import { getTodayGospel } from "../data/gospels";
 import { getLiturgicalDayByDate } from "../utils/liturgicalDays";
 
 function getTodayDateKey() {
@@ -13,51 +12,65 @@ function getTodayDateKey() {
   return `${year}-${month}-${day}`;
 }
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 1000;
-const TIMEOUT_MS = 12000;
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error(`Timeout después de ${ms}ms`)), ms)
-    ),
-  ]);
-}
+const MAX_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 750;
+const REQUEST_TIMEOUT_MS = 6000;
 
 export function useTodayGospel() {
   const [todayGospel, setTodayGospel] = useState<Gospel | null>(null);
   const [isLoadingGospel, setIsLoadingGospel] = useState(true);
+  const gospelRef = useRef<Gospel | null>(null);
+  const activeLoadRef = useRef<Promise<void> | null>(null);
 
-  const loadTodayGospel = useCallback(async () => {
-    setIsLoadingGospel(true);
-
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      try {
-        const gospelFromSupabase = await withTimeout(
-          getLiturgicalDayByDate(getTodayDateKey()),
-          TIMEOUT_MS
-        );
-
-        if (gospelFromSupabase) {
-          setTodayGospel(gospelFromSupabase);
-          setIsLoadingGospel(false);
-          return;
-        }
-      } catch (error) {
-        console.warn(`Intento ${attempt + 1} fallido:`, error);
-      }
-
-      if (attempt < MAX_RETRIES - 1) {
-        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
-      }
+  const loadTodayGospel = useCallback(() => {
+    if (activeLoadRef.current) {
+      return activeLoadRef.current;
     }
 
-    // Fallback local — siempre muestra algo
-    const fallback = getTodayGospel();
-    setTodayGospel(fallback);
-    setIsLoadingGospel(false);
+    const loadPromise = (async () => {
+      if (!gospelRef.current) {
+        setIsLoadingGospel(true);
+      }
+
+      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        const controller = new AbortController();
+        const timeout = window.setTimeout(
+          () => controller.abort(),
+          REQUEST_TIMEOUT_MS
+        );
+
+        try {
+          const gospelFromSupabase = await getLiturgicalDayByDate(
+            getTodayDateKey(),
+            controller.signal
+          );
+
+          if (gospelFromSupabase) {
+            gospelRef.current = gospelFromSupabase;
+            setTodayGospel(gospelFromSupabase);
+            setIsLoadingGospel(false);
+            return;
+          }
+        } catch (error) {
+          console.warn(`Intento ${attempt + 1} fallido:`, error);
+        } finally {
+          window.clearTimeout(timeout);
+        }
+
+        if (attempt < MAX_ATTEMPTS - 1) {
+          await new Promise((resolve) =>
+            window.setTimeout(resolve, RETRY_DELAY_MS)
+          );
+        }
+      }
+
+      setIsLoadingGospel(false);
+    })().finally(() => {
+      activeLoadRef.current = null;
+    });
+
+    activeLoadRef.current = loadPromise;
+    return loadPromise;
   }, []);
 
   useEffect(() => {
@@ -70,8 +83,18 @@ export function useTodayGospel() {
         void loadTodayGospel();
       }
     }
+
+    function handleOnline() {
+      void loadTodayGospel();
+    }
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("online", handleOnline);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("online", handleOnline);
+    };
   }, [loadTodayGospel]);
 
   return {

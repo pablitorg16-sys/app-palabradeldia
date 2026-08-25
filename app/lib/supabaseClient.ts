@@ -7,3 +7,18 @@ export const supabase = createClient(
   supabaseUrl,
   supabaseAnonKey
 );
+
+// Cliente exclusivo para datos públicos. No restaura sesiones ni comparte el
+// bloqueo interno de Auth con el cliente usado por perfiles y autenticación.
+export const publicSupabase = createClient(
+  supabaseUrl,
+  supabaseAnonKey,
+  {
+    auth: {
+      storageKey: "palabradeldia-public",
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  }
+);
